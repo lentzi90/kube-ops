@@ -1,8 +1,8 @@
 # Add worker node
 
 The same playbook that was used to provision the kubernetes cluster can also be
-used to add new nodes. You just need to add a new entry in the `hosts` hash and
-the `workers` list in the `Vagrantfile`:
+used to add new nodes. You just need to add a new entry in the `hosts` hash in
+the `Vagrantfile`:
 ```
 hosts = {
     "master" => { "memory" => 1536, "ip" => "192.168.10.10"},
@@ -11,13 +11,12 @@ hosts = {
     "worker3" => { "memory" => 1024, "ip" => "192.168.10.32"},
     "nfs" => { "memory" => 512, "ip" => "192.168.10.20"}
 }
-workers = ["worker1", "worker2", "worker3"]
 ```
 
-Make sure that the `vars` hash also is up to date with the correct `k8s_version`
-for example. Then run the provisioner:
+Make sure that the inventory file (`inventory.ini`) is up to date with the new
+worker and correct `k8s_version` for example. Then run the playbook:
 ```
-vagrant provision --provision-with scale-up
+ansible-playbook playbooks/deploy-kubernetes.yml
 ```
 
 ## How is this done and how can I do it manually?

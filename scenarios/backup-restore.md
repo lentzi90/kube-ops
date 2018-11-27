@@ -44,24 +44,13 @@ A more drastic alternative is to destroy the node completely:
 
 ```
 vagrant destroy master
-vagrant up master
-vagrant provision --provision-with node
+vagrant up master --no-provision
+ansible-playbook playbooks/deploy-kubernetes.yml --tags prereq,node
 
 # On master
 mkdir backup
 sudo mount nfs:/nfs/export/www-data backup
 ```
-
-Note that the provisioning is essentially equivalent to the following:
-```
-ansible-playbook playbooks/deploy-kubernetes.yml --tags prereq,node -e k8s_version=1.11.4
-```
-however, recreating the master node may change the IP address and thus make the
-inventory invalid. Using vagrant makes sure that the inventory is updated if
-necessary.
-
-To be clear, the IP address specified in the vagrant file does not change, but
-vagrant creates another address that unfortunately is put in the inventory.
 
 ## Restore
 

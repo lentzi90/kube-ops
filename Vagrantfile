@@ -34,21 +34,6 @@ Vagrant.configure("2") do |config|
                     ansible.playbook = "playbooks/provision-all.yml"
                     ansible.inventory_path = "inventory.ini"
                 end
-
-                config.vm.provision "scale-up", type: :ansible, run: "never" do |ansible|
-                    # Run on all hosts in parallel
-                    ansible.limit = "all"
-                    ansible.playbook = "playbooks/deploy-kubernetes.yml"
-                    ansible.inventory_path = "inventory.ini"
-                end
-
-                config.vm.provision "node", type: :ansible, run: "never" do |ansible|
-                    # Run on all hosts in parallel
-                    ansible.limit = "all"
-                    ansible.playbook = "playbooks/deploy-kubernetes.yml"
-                    ansible.inventory_path = "inventory.ini"
-                    ansible.tags = ["prereq", "node"]
-                end
             end
         end
     end
