@@ -5,7 +5,7 @@
     - name: Install python if needed
       become: yes
       become_user: root
-      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+      raw: test -e /usr/bin/python || yum install -y python2
   tags:
     - prereq
 

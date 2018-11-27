@@ -9,10 +9,9 @@ hosts = {
 }
 
 Vagrant.configure("2") do |config|
-    config.vm.box = "generic/ubuntu1604"
-    config.vm.provider "libvirt" do |lv|
-        lv.cpu_mode = 'host-passthrough'
-    end
+    config.vm.box = "centos/7"
+    config.vm.provider "libvirt"
+    config.vm.synced_folder ".", "/vagrant", disabled: true
 
     # Loop over all machine names
     hosts.each_key do |host|

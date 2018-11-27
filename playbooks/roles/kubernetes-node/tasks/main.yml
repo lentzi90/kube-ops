@@ -12,11 +12,11 @@
     state: absent
     regexp: '^127\.0\.\d+\.\d+\s+{{ inventory_hostname }}'
 
-- name: Install some base packages
-  apt:
+- name: Install commonly needed packages
+  yum:
     name:
-      - python-simplejson
-      - nfs-common
+      - nfs-utils
+      - libselinux-python
 
 - name: Remove swap
   lineinfile:
@@ -29,32 +29,37 @@
   command: swapoff --all
   when: removed_swap is changed
 
-- name: Install docker
-  apt:
-    name: docker.io
-    update_cache: yes
-
-- name: Add kubernetes apt key
-  apt_key:
-    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+- include_tasks: docker.yml
 
 - name: Add kubernetes repository
-  apt_repository:
-    repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
-  register: kubernetes_repo
+  blockinfile:
+    create: yes
+    path: /etc/yum.repos.d/kubernetes.repo
+    block: |
+      [kubernetes]
+      name=Kubernetes
+      baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+      enabled=1
+      gpgcheck=1
+      repo_gpgcheck=1
+      gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+      exclude=kube*
 
-- name: Update apt cache
-  apt:
-    update_cache: yes
-  when: kubernetes_repo is changed
+- name: Disable SELinux
+  selinux:
+    policy: targeted
+    state: permissive
+
 
 - name: Install kubernetes parts
-  apt:
+  yum:
     name:
-      - kubelet={{ k8s_version }}-00
-      - kubeadm={{ k8s_version }}-00
-      - kubectl={{ k8s_version }}-00
+      - kubelet-{{ k8s_version }}-0
+      - kubeadm-{{ k8s_version }}-0
+      - kubectl-{{ k8s_version }}-0
     state: present
+    disable_excludes: all
+    update_cache: yes
 
 - name: Enable kubelet
   systemd:

@@ -1,22 +1,21 @@
 ---
 - hosts: master
   tasks:
-    - name: Download helm installation script
+
+    - name: Download helm
       become: yes
       become_user: root
-      get_url:
-        url: "https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get"
-        dest: /tmp/get_helm.sh
-        mode: u=rwx
-      tags:
-        - helm
+      unarchive:
+        src: https://storage.googleapis.com/kubernetes-helm/helm-v{{ helm_version | default("2.11.0") }}-linux-amd64.tar.gz
+        dest: /tmp
+        remote_src: yes
+      register: download_helm
 
     - name: Install helm
       become: yes
       become_user: root
-      command: /tmp/get_helm.sh
-      tags:
-        - helm
+      command: mv /tmp/linux-amd64/helm /usr/local/bin/helm
+      when: download_helm is changed
 
     - name: Init helm
       command: helm init

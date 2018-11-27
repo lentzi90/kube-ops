@@ -1,5 +1,5 @@
 - name: Install haproxy
-  apt:
+  yum:
     name: haproxy
     state: present
 

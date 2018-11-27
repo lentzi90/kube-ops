@@ -1,18 +1,16 @@
 - name: Install nfs server
-  apt:
-    name: nfs-kernel-server
+  yum:
+    name: nfs-utils
     state: present
 
 - name: Ensure www-data group exists
   group:
     name: www-data
-    gid: 33
     state: present
 
 - name: Ensure www-data user exists
   user:
     name: www-data
-    uid: 33
     group: www-data
     system: yes
     create_home: no
@@ -34,6 +32,6 @@
 
 - name: Restart nfs server
   service:
-    name: nfs-kernel-server
+    name: nfs-server
     state: restarted
     enabled: yes

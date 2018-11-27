@@ -78,7 +78,7 @@
       become: yes
       become_user: "{{ ansible_user }}"
       blockinfile:
-        path: /home/{{ ansible_user }}/.profile
+        path: /home/{{ ansible_user }}/.bashrc
         block: |
           # Kubectl shell completion
           source '/home/{{ ansible_user }}/.kube/completion.bash.inc'
