@@ -22,7 +22,7 @@
           mode http
           option forwardfor
           {% for worker in groups.workers -%}
-          server {{ worker }} {{ hostvars[worker].ip }}:80 check
+          server {{ worker }} {{ hostvars[worker].ansible_host }}:80 check
           {% endfor %}
 
 - name: Start haproxy

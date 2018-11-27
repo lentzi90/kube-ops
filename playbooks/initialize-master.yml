@@ -19,7 +19,6 @@
           # use. For example, a public DNS name or a public IP.
           apiServerCertSANs:
             - {{ ansible_host }}
-            - {{ ip }}
           api:
             advertiseAddress: {{ master_advertise_ip }}
           networking:
@@ -38,7 +37,7 @@
           apiVersion: kubeadm.k8s.io/v1alpha3
           kind: ClusterConfiguration
           apiServerCertSANs:
-          - {{ ip }}
+          - {{ ansible_host }}
           kubernetesVersion: v{{ k8s_version }}
           networking:
             podSubnet: {{ k8s_pod_cidr }}

@@ -42,7 +42,7 @@
         - nfs
 
     - set_fact:
-        worker_ips: "{{ groups.workers | map('extract', hostvars, 'ip') | list }}"
+        worker_ips: "{{ groups.workers | map('extract', hostvars, 'ansible_host') | list }}"
       tags:
         - ingress
 

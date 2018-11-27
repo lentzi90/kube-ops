@@ -7,22 +7,6 @@ hosts = {
     "worker3" => { "memory" => 1024, "ip" => "192.168.10.32"},
     "nfs" => { "memory" => 512, "ip" => "192.168.10.20"}
 }
-workers = ["worker1", "worker2", "worker3"]
-
-groups = {
-    "workers" => workers,
-    "nodes" => ["master"] + workers,
-    "nfs_servers" => ["nfs"]
-}
-
-vars = {
-    "k8s_version" => "1.11.4",
-    # "k8s_version" => "1.12.2",
-    "k8s_pod_cidr" => "10.32.0.0/12",
-    "nfs_path" => "/nfs/export/www-data",
-    "master_advertise_ip" => hosts["master"]["ip"],
-    "nfs_server" => hosts["nfs"]["ip"],
-}
 
 Vagrant.configure("2") do |config|
     config.vm.box = "generic/ubuntu1604"
@@ -49,27 +33,21 @@ Vagrant.configure("2") do |config|
                     # Run on all hosts in parallel
                     ansible.limit = "all"
                     ansible.playbook = "playbooks/provision-all.yml"
-                    ansible.host_vars = hosts
-                    ansible.groups = groups
-                    ansible.extra_vars = vars
+                    ansible.inventory_path = "inventory.ini"
                 end
 
                 config.vm.provision "scale-up", type: :ansible, run: "never" do |ansible|
                     # Run on all hosts in parallel
                     ansible.limit = "all"
                     ansible.playbook = "playbooks/deploy-kubernetes.yml"
-                    ansible.host_vars = hosts
-                    ansible.groups = groups
-                    ansible.extra_vars = vars
+                    ansible.inventory_path = "inventory.ini"
                 end
 
                 config.vm.provision "node", type: :ansible, run: "never" do |ansible|
                     # Run on all hosts in parallel
                     ansible.limit = "all"
                     ansible.playbook = "playbooks/deploy-kubernetes.yml"
-                    ansible.host_vars = hosts
-                    ansible.groups = groups
-                    ansible.extra_vars = vars
+                    ansible.inventory_path = "inventory.ini"
                     ansible.tags = ["prereq", "node"]
                 end
             end
