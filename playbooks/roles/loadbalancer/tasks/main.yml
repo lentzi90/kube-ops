@@ -1,0 +1,32 @@
+- name: Install haproxy
+  apt:
+    name: haproxy
+    state: present
+
+- name: Render haproxy configuration
+  blockinfile:
+    path: /etc/haproxy/haproxy.cfg
+    block: |
+      listen stats
+          bind *:9000
+          mode http
+          stats enable
+          stats uri /stats
+          stats auth admin:admin
+      frontend http
+          bind *:80
+          mode http
+          default_backend k8s_workers
+      backend k8s_workers
+          balance roundrobin
+          mode http
+          option forwardfor
+          {% for worker in groups.workers -%}
+          server {{ worker }} {{ hostvars[worker].ip }}:80 check
+          {% endfor %}
+
+- name: Start haproxy
+  service:
+    name: haproxy
+    state: restarted
+    enabled: yes

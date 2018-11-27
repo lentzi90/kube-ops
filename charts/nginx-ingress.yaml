@@ -1,0 +1,19 @@
+## nginx configuration
+## Ref: https://github.com/kubernetes/ingress/blob/master/controllers/nginx/configuration.md
+##
+controller:
+  # Allow eviction of pod
+  # minAvailable: 0  # default: 1
+  replicaCount: 2    # default: 1
+
+  service:
+
+    ## List of IP addresses at which the controller services are available
+    ## Ref: https://kubernetes.io/docs/user-guide/services/#external-ips
+    ##
+    externalIPs: ["192.168.10.30", "192.168.10.31", "192.168.10.32"]
+
+defaultBackend:
+  # Allow eviction of pod
+  # minAvailable: 0  # default: 1
+  replicaCount: 2    # default: 1

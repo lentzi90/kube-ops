@@ -1,0 +1,104 @@
+---
+- hosts: master
+  become: yes
+  become_user: root
+  tasks:
+
+    - name: Create config directory for kubeadm
+      file:
+        path: /etc/kubeadm
+        state: directory
+
+    - name: Render kubeadm config for 1.11
+      copy:
+        content: |
+          apiVersion: kubeadm.k8s.io/v1alpha2
+          kind: MasterConfiguration
+          # Additional hostnames or IP addresses that should be added to the
+          # Subject Alternate Name section for the certificate that the API Server will
+          # use. For example, a public DNS name or a public IP.
+          apiServerCertSANs:
+            - {{ ansible_host }}
+            - {{ ip }}
+          api:
+            advertiseAddress: {{ master_advertise_ip }}
+          networking:
+            podSubnet: {{ k8s_pod_cidr }}
+        dest: /etc/kubeadm/kubeadm-config.yaml
+      when: k8s_version.startswith("1.11")
+
+    - name: Render kubeadm config for 1.12+
+      copy:
+        content: |
+          apiVersion: kubeadm.k8s.io/v1alpha3
+          kind: InitConfiguration
+          apiEndpoint:
+            advertiseAddress: {{ master_advertise_ip }}
+          ---
+          apiVersion: kubeadm.k8s.io/v1alpha3
+          kind: ClusterConfiguration
+          apiServerCertSANs:
+          - {{ ip }}
+          kubernetesVersion: v{{ k8s_version }}
+          networking:
+            podSubnet: {{ k8s_pod_cidr }}
+        dest: /etc/kubeadm/kubeadm-config.yaml
+      when: not k8s_version.startswith("1.11")
+
+    - name: Initialize master
+      command: kubeadm init --config=/etc/kubeadm/kubeadm-config.yaml
+      args:
+        creates: /etc/kubernetes/admin.conf
+      register: initialized
+
+    - name: Create config directory
+      file:
+        path: /home/{{ ansible_user }}/.kube
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+
+    - name: Copy config
+      command: cp /etc/kubernetes/admin.conf /home/{{ ansible_user }}/.kube/config
+      when: initialized is changed
+
+    - name: Set permissions for kubeconfig
+      file:
+        path: /home/{{ ansible_user }}/.kube/config
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: "u=rw,g=r,o=r"
+        state: file
+
+    - name: Store bash completion code for kubectl
+      become: yes
+      become_user: "{{ ansible_user }}"
+      shell: kubectl completion bash > ~/.kube/completion.bash.inc
+
+    - name: Enable bash completion for kubectl
+      become: yes
+      become_user: "{{ ansible_user }}"
+      blockinfile:
+        path: /home/{{ ansible_user }}/.profile
+        block: |
+          # Kubectl shell completion
+          source '/home/{{ ansible_user }}/.kube/completion.bash.inc'
+
+    - name: Install weave network
+      shell: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+      become: yes
+      become_user: "{{ ansible_user }}"
+      when: initialized is changed
+
+    # allow all service accounts to act as administrators of the cluster
+    # See: https://kubernetes.io/docs/admin/authorization/rbac/
+    - name: Set service account permissions
+      command: >
+        kubectl create clusterrolebinding permissive-binding
+          --clusterrole=cluster-admin
+          --user=admin
+          --user=kubelet
+          --group=system:serviceaccounts
+      become: yes
+      become_user: "{{ ansible_user }}"
+      when: initialized is changed

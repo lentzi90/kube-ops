@@ -1,0 +1,21 @@
+---
+- hosts: all
+  gather_facts: no
+  tasks:
+    - name: Install python if needed
+      become: yes
+      become_user: root
+      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+  tags:
+    - prereq
+
+- hosts: nodes
+  become: yes
+  become_user: root
+  roles:
+    - kubernetes-node
+  tags:
+    - node
+
+- import_playbook: initialize-master.yml
+- import_playbook: join-cluster.yml

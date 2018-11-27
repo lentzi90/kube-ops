@@ -1,0 +1,90 @@
+---
+- hosts: master
+  tasks:
+    - name: Download helm installation script
+      become: yes
+      become_user: root
+      get_url:
+        url: "https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get"
+        dest: /tmp/get_helm.sh
+        mode: u=rwx
+      tags:
+        - helm
+
+    - name: Install helm
+      become: yes
+      become_user: root
+      command: /tmp/get_helm.sh
+      tags:
+        - helm
+
+    - name: Init helm
+      command: helm init
+      tags:
+        - helm
+
+    - name: Wait for tiller to start
+      command: kubectl get deployment --all-namespaces -l app=helm,name=tiller -o json
+      register: tiller_pod
+      until: tiller_pod.stdout | from_json | json_query('items[0].status.availableReplicas') >= 1
+      retries: 20
+      tags:
+        - helm
+
+    - name: Deploy nfs client provisioner
+      command: >
+        helm install --name nfs-provisioner
+          --set nfs.server={{ nfs_server }}
+          --set nfs.path={{ nfs_path }}
+          --set storageClass.defaultClass=true
+          stable/nfs-client-provisioner
+      tags:
+        - nfs
+
+    - set_fact:
+        worker_ips: "{{ groups.workers | map('extract', hostvars, 'ip') | list }}"
+      tags:
+        - ingress
+
+    - name: Write values for ingress controller
+      blockinfile:
+        create: yes
+        path: /home/{{ ansible_user }}/ingress-chart-values.yaml
+        block: |
+          controller:
+            # Allow eviction of pod
+            # minAvailable: 0  # default: 1
+            replicaCount: 2    # default: 1
+
+            service:
+              externalIPs: {{ worker_ips | to_yaml }}
+
+          defaultBackend:
+            # Allow eviction of pod
+            # minAvailable: 0  # default: 1
+            replicaCount: 2    # default: 1
+      tags:
+        - ingress
+
+    - name: Deploy nginx ingress controller
+      command: >
+        helm install stable/nginx-ingress
+          --name ingress-controller
+          -f /home/{{ ansible_user }}/ingress-chart-values.yaml
+      tags:
+        - ingress
+
+    - name: Write wordpress values file
+      template:
+        src: wordpress-production.yaml.j2
+        dest: wordpress-production.yaml
+      tags:
+        - wordpress
+
+    - name: Deploy wordpress
+      command: >
+        helm install stable/wordpress
+          --name wordpress
+          -f /home/{{ ansible_user }}/wordpress-production.yaml
+      tags:
+        - wordpress

@@ -1,0 +1,22 @@
+---
+- hosts: master
+  become: yes
+  become_user: root
+  tasks:
+
+    - name: Get join string
+      command: kubeadm token create --print-join-command
+      register: string_result
+
+    - name: Store join string
+      set_fact:
+        join_command: "{{ string_result.stdout }}"
+
+- hosts: workers
+  become: yes
+  become_user: root
+  tasks:
+    - name: Join the cluster
+      command: "{{ hostvars.master.join_command }}"
+      args:
+        creates: /etc/kubernetes/kubelet.conf

@@ -1,0 +1,39 @@
+- name: Install nfs server
+  apt:
+    name: nfs-kernel-server
+    state: present
+
+- name: Ensure www-data group exists
+  group:
+    name: www-data
+    gid: 33
+    state: present
+
+- name: Ensure www-data user exists
+  user:
+    name: www-data
+    uid: 33
+    group: www-data
+    system: yes
+    create_home: no
+
+- name: Create nfs exported directory
+  file:
+    path: "{{ nfs_path }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: "a=rwx"
+
+- name: Enable nfs export
+  lineinfile:
+    path: /etc/exports
+    line: "{{ nfs_path }} *(insecure,rw,async,no_subtree_check,no_root_squash)"
+    regexp: '^{{ nfs_path }}.*'
+    create: yes
+
+- name: Restart nfs server
+  service:
+    name: nfs-kernel-server
+    state: restarted
+    enabled: yes

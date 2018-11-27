@@ -1,0 +1,71 @@
+- name: Add hostname to /etc/hosts
+  lineinfile:
+    destfile: /etc/hosts
+    state: present
+    line: "{{ hostvars[item].ip }} {{ item }}"
+  when: hostvars[item].ip is defined
+  with_items: "{{ groups['all'] }}"
+
+- name: Make sure `hostname -i` shows the correct IP
+  lineinfile:
+    destfile: /etc/hosts
+    state: absent
+    regexp: '^127\.0\.\d+\.\d+\s+{{ inventory_hostname }}'
+
+- name: Install some base packages
+  apt:
+    name:
+      - python-simplejson
+      - nfs-common
+
+- name: Remove swap
+  lineinfile:
+    dest: /etc/fstab
+    regexp: '^(.*)swap'
+    state: absent
+  register: removed_swap
+
+- name: Disable swap
+  command: swapoff --all
+  when: removed_swap is changed
+
+- name: Install docker
+  apt:
+    name: docker.io
+    update_cache: yes
+
+- name: Add kubernetes apt key
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+
+- name: Add kubernetes repository
+  apt_repository:
+    repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
+  register: kubernetes_repo
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+  when: kubernetes_repo is changed
+
+- name: Install kubernetes parts
+  apt:
+    name:
+      - kubelet={{ k8s_version }}-00
+      - kubeadm={{ k8s_version }}-00
+      - kubectl={{ k8s_version }}-00
+    state: present
+
+- name: Enable kubelet
+  systemd:
+    name: kubelet
+    enabled: yes
+
+- name: Check bridged traffic to iptables
+  command: sysctl net.bridge.bridge-nf-call-iptables
+  register: iptables
+  changed_when: False
+
+- name: Pass bridged IPv4 traffic to iptables
+  command: sysctl net.bridge.bridge-nf-call-iptables=1
+  when: iptables.stdout != "net.bridge.bridge-nf-call-iptables = 1"
