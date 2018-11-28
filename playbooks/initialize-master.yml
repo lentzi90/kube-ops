@@ -9,6 +9,16 @@
         path: /etc/kubeadm
         state: directory
 
+    - name: Create kubernetes pki folder
+      file:
+        path: /etc/kubernetes/pki
+
+    - name: Add auth file for api server
+      copy:
+        content: |
+          p455w0rd,dashboard-user,1001
+        dest: /etc/kubernetes/pki/auth-file.txt
+
     - name: Render kubeadm config for 1.11
       copy:
         content: |
@@ -38,6 +48,8 @@
           kind: ClusterConfiguration
           apiServerCertSANs:
           - {{ ansible_host }}
+          apiServerExtraArgs:
+            basic-auth-file: /etc/kubernetes/pki/auth-file.txt
           kubernetesVersion: v{{ k8s_version }}
           networking:
             podSubnet: {{ k8s_pod_cidr }}
