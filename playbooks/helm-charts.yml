@@ -76,7 +76,7 @@
     - name: Write wordpress values file
       template:
         src: wordpress-production.yaml.j2
-        dest: wordpress-production.yaml
+        dest: /home/{{ ansible_user }}/wordpress-production.yaml
       tags:
         - wordpress
 
