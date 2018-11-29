@@ -1,15 +1,9 @@
 ---
 - import_playbook: deploy-kubernetes.yml
 
-- hosts: nfs_servers
-  become: yes
-  become_user: root
-  roles:
-    - nfs-server
-    - loadbalancer
+- import_playbook: setup-nfs.yml
   tags:
     - nfs
-    - loadbalancer
 
 - import_playbook: helm-charts.yml
   tags:

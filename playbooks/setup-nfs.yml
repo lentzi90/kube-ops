@@ -1,0 +1,6 @@
+- hosts: nfs_servers
+  become: yes
+  become_user: root
+  roles:
+    - nfs-server
+    - loadbalancer
