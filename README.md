@@ -3,6 +3,8 @@
 This folder contains a Vagrantfile to set up a local kubernetes cluster.
 Ansible is used for provisioning (see `playbooks`).
 
+## Quick start
+
 The cluster is set up and provisioned by running `vagrant up`.
 
 If you wish to run playbooks manually from the host, do it like this:
@@ -11,6 +13,36 @@ ansible-playbook playbooks/provision-all.yml
 ```
 There is no need to specify the inventory since it is already configured in
 `ansible.cfg`.
+
+## Requirements
+
+- [Vagrant](https://www.vagrantup.com/)
+- [Libvirt](https://libvirt.org/) OR [Virtualbox](https://www.virtualbox.org/)
+- [Ansible](https://www.ansible.com/) >= 2.7
+
+If you want to use vagrant with the libvirt provider, make sure you set up
+libvirt with KVM first and install the `vagrant-libvirt` plugin.
+Instructions for setting up libvirt with KVM on Ubuntu can be found [here](https://help.ubuntu.com/community/KVM/Installation).
+The `vagrant-libvirt` plugin can be found [here](https://github.com/vagrant-libvirt/vagrant-libvirt).
+
+If you want to use virtualbox, just install virtualbox and vagrant and change
+the `inventory.ini` file to use the virtualbox block instead of the libvirt one.
+Like this:
+
+```
+; Libvirt
+; master ansible_host=192.168.10.10 ansible_port=22 ansible_user='vagrant' ansible_ssh_private_key_file='.vagrant/machines/master/libvirt/private_key'
+; worker1 ansible_host=192.168.10.30 ansible_port=22 ansible_user='vagrant' ansible_ssh_private_key_file='.vagrant/machines/worker1/libvirt/private_key'
+; worker2 ansible_host=192.168.10.31 ansible_port=22 ansible_user='vagrant' ansible_ssh_private_key_file='.vagrant/machines/worker2/libvirt/private_key'
+; worker3 ansible_host=192.168.10.32 ansible_port=22 ansible_user='vagrant' ansible_ssh_private_key_file='.vagrant/machines/worker3/libvirt/private_key'
+; nfs ansible_host=192.168.10.20 ansible_port=22 ansible_user='vagrant' ansible_ssh_private_key_file='.vagrant/machines/nfs/libvirt/private_key'
+; Virtualbox
+master ansible_host=192.168.10.10 ansible_port=22 ansible_user='vagrant' ansible_ssh_private_key_file='.vagrant/machines/master/virtualbox/private_key'
+worker1 ansible_host=192.168.10.30 ansible_port=22 ansible_user='vagrant' ansible_ssh_private_key_file='.vagrant/machines/worker1/virtualbox/private_key'
+worker2 ansible_host=192.168.10.31 ansible_port=22 ansible_user='vagrant' ansible_ssh_private_key_file='.vagrant/machines/worker2/virtualbox/private_key'
+worker3 ansible_host=192.168.10.32 ansible_port=22 ansible_user='vagrant' ansible_ssh_private_key_file='.vagrant/machines/worker3/virtualbox/private_key'
+nfs ansible_host=192.168.10.20 ansible_port=22 ansible_user='vagrant' ansible_ssh_private_key_file='.vagrant/machines/nfs/virtualbox/private_key'
+```
 
 ## Ops Scenarios
 

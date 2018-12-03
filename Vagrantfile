@@ -10,7 +10,6 @@ hosts = {
 
 Vagrant.configure("2") do |config|
     config.vm.box = "centos/7"
-    config.vm.provider "libvirt"
     config.vm.synced_folder ".", "/vagrant", disabled: true
 
     # Loop over all machine names
@@ -21,6 +20,10 @@ Vagrant.configure("2") do |config|
 
             node.vm.provider :libvirt do |lv|
                 lv.memory = hosts[host]["memory"]
+            end
+
+            node.vm.provider :virtualbox do |vbox|
+                vbox.customize ["modifyvm", :id, "--memory", hosts[host]["memory"]]
             end
 
             # Run ansible in parallel when all hosts are up and running
