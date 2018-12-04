@@ -20,10 +20,12 @@ Vagrant.configure("2") do |config|
 
             node.vm.provider :libvirt do |lv|
                 lv.memory = hosts[host]["memory"]
+                lv.cpus = 2
             end
 
             node.vm.provider :virtualbox do |vbox|
                 vbox.customize ["modifyvm", :id, "--memory", hosts[host]["memory"]]
+                vbox.cpus = 2
             end
 
             # Run ansible in parallel when all hosts are up and running
