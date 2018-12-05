@@ -53,6 +53,16 @@ config.vm.box = "centos/7"
 # config.vm.box = "generic/ubuntu1604"
 # config.vm.box = "generic/ubuntu1804"
 ```
+OR add the box in the `hosts` hash (see `worker2` and `worker3`):
+```ruby
+hosts = {
+    "master" => { "memory" => 1536, "ip" => "192.168.10.10"},
+    "worker1" => { "memory" => 1536, "ip" => "192.168.10.30"},
+    "worker2" => { "memory" => 1536, "ip" => "192.168.10.31", "box" => "generic/ubuntu1604"},
+    "worker3" => { "memory" => 1024, "ip" => "192.168.10.32", "box" => "generic/ubuntu1804"},
+    "nfs" => { "memory" => 512, "ip" => "192.168.10.20"}
+}
+```
 
 ## Ops Scenarios
 

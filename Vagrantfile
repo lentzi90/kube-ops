@@ -19,6 +19,11 @@ Vagrant.configure("2") do |config|
     # Loop over all machine names
     hosts.each_key do |host|
         config.vm.define host, primary: host == "master" do |node|
+            # Use custom box if set
+            if hosts[host]["box"]
+                node.vm.box = hosts[host]["box"]
+            end
+
             node.vm.hostname = host
             node.vm.network :private_network, ip: hosts[host]["ip"]
 
