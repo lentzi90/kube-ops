@@ -18,7 +18,7 @@ There is no need to specify the inventory since it is already configured in
 
 - [Vagrant](https://www.vagrantup.com/)
 - [Libvirt](https://libvirt.org/) OR [Virtualbox](https://www.virtualbox.org/)
-- [Ansible](https://www.ansible.com/) >= 2.7
+- [Ansible](https://www.ansible.com/) >= 2.6
 
 If you want to use vagrant with the libvirt provider, make sure you set up
 libvirt with KVM first and install the `vagrant-libvirt` plugin.
