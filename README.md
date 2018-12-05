@@ -25,6 +25,8 @@ libvirt with KVM first and install the `vagrant-libvirt` plugin.
 Instructions for setting up libvirt with KVM on Ubuntu can be found [here](https://help.ubuntu.com/community/KVM/Installation).
 The `vagrant-libvirt` plugin can be found [here](https://github.com/vagrant-libvirt/vagrant-libvirt).
 
+## Options
+
 If you want to use virtualbox, just install virtualbox and vagrant and change
 the `inventory.ini` file to use the virtualbox block instead of the libvirt one.
 Like this:
@@ -42,6 +44,14 @@ worker1 ansible_host=192.168.10.30 ansible_port=22 ansible_user='vagrant' ansibl
 worker2 ansible_host=192.168.10.31 ansible_port=22 ansible_user='vagrant' ansible_ssh_private_key_file='.vagrant/machines/worker2/virtualbox/private_key'
 worker3 ansible_host=192.168.10.32 ansible_port=22 ansible_user='vagrant' ansible_ssh_private_key_file='.vagrant/machines/worker3/virtualbox/private_key'
 nfs ansible_host=192.168.10.20 ansible_port=22 ansible_user='vagrant' ansible_ssh_private_key_file='.vagrant/machines/nfs/virtualbox/private_key'
+```
+
+You can also choose between Ubuntu and CentOS as operating system for the nodes.
+Simply uncomment the vagrant box you want to use in `Vagrantfile`:
+```ruby
+config.vm.box = "centos/7"
+# config.vm.box = "generic/ubuntu1604"
+# config.vm.box = "generic/ubuntu1804"
 ```
 
 ## Ops Scenarios

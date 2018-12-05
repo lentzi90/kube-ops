@@ -9,7 +9,11 @@ hosts = {
 }
 
 Vagrant.configure("2") do |config|
+    # Choose which box you want below
     config.vm.box = "centos/7"
+    # config.vm.box = "generic/ubuntu1604"
+    # config.vm.box = "generic/ubuntu1804"
+
     config.vm.synced_folder ".", "/vagrant", disabled: true
 
     # Loop over all machine names

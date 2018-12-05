@@ -2,6 +2,13 @@
   yum:
     name: nfs-utils
     state: present
+  when: ansible_distribution == 'CentOS'
+
+- name: Install nfs server
+  apt:
+    name: nfs-kernel-server
+    state: present
+  when: ansible_distribution == 'Ubuntu'
 
 - name: Ensure www-data group exists
   group:
@@ -36,4 +43,15 @@
     name: nfs-server
     state: restarted
     enabled: yes
-  when: nfs_export is changed
+  when:
+    - nfs_export is changed
+    - ansible_distribution == 'CentOS'
+
+- name: Restart nfs server
+  service:
+    name: nfs-kernel-server
+    state: restarted
+    enabled: yes
+  when:
+    - nfs_export is changed
+    - ansible_distribution == 'Ubuntu'
