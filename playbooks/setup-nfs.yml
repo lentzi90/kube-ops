@@ -1,6 +1,7 @@
 - hosts: nfs_servers
   become: yes
   become_user: root
+  strategy: free
   roles:
     - nfs-server
     - loadbalancer
