@@ -17,6 +17,8 @@
 
 - name: Add docker repository
   command: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+  args:
+    creates: /etc/yum.repos.d/docker-ce.repo
 
 - name: Install docker
   yum:
@@ -43,6 +45,7 @@
         ]
       }
     dest: /etc/docker/daemon.json
+  register: docker_config
 
 - name: Set up docker service
   file:
@@ -55,3 +58,4 @@
     daemon_reload: yes
     state: restarted
     enabled: yes
+  when: docker_config is changed
