@@ -5,7 +5,7 @@ Ansible is used for provisioning (see `playbooks`).
 
 ## Quick start
 
-The cluster is set up and provisioned by running `vagrant up`.
+The cluster is set up and provisioned by running `vagrant up --provider libvirt`.
 
 If you wish to run playbooks manually from the host, do it like this:
 ```
@@ -82,13 +82,13 @@ have volumes attached.
 version you want of all charts, and if needed run `helm repo update`.
 - Be careful what you wish for: pod disruption budgets won't stop nodes from
 going down, but they will prevent you from evicting pods!
-- `kubeadm` is supposed to support downgrading using the same method as when
-upgrading. Unfortunately, it does not seem to work well. It does not support
-planning the downgrade and applying it directly makes weave crash loop.
 - Backing up only etcd data and root certificate is not enough. Old secrets
 (tokens) will not be valid and cause applications to fail. (Kube-proxy is one
 example.)
-- Wordpress is sometimes unable to connect to the database while the master is
-down. This is due to coredns running on the master at first. If the pods are
-moved to some other node all applications continue to operate normally when the
-master goes down.
+- Coredns running on the master at first. This will make all pods loose
+DNS if/when the master goes down. If the coredns pods are moved to some other
+node (by killing them after other nodes have joined) all applications will
+continue to operate normally when the master goes down.
+- Vagrant may occasionally try to run the ansible provisioner for all VMs. If
+this happens, just `Ctrl + C` and start it again with `vagrant provision`.
+(You'll notice this by looking for duplicate tasks and output.)
