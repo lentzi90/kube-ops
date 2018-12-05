@@ -32,6 +32,10 @@
 - include_tasks: docker.yml
 
 - name: Add kubernetes repository
+  # Default ansible version on ubuntu does not support "disable_excludes"
+  # so we avoid excluding kubernetes packages here.
+  # Add this to the block when it is supported.
+  # exclude=kube*
   blockinfile:
     create: yes
     path: /etc/yum.repos.d/kubernetes.repo
@@ -43,7 +47,6 @@
       gpgcheck=1
       repo_gpgcheck=1
       gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-      exclude=kube*
 
 - name: Disable SELinux
   selinux:
@@ -58,7 +61,8 @@
       - kubeadm-{{ k8s_version }}-0
       - kubectl-{{ k8s_version }}-0
     state: present
-    disable_excludes: all
+    # When ubuntu has ansible version 2.7, enable this again
+    # disable_excludes: all
     update_cache: yes
 
 - name: Enable kubelet
