@@ -73,6 +73,8 @@
       become: yes
       become_user: "{{ ansible_user }}"
       shell: kubectl completion bash > ~/.kube/completion.bash.inc
+      args:
+        creates: /home/{{ ansible_user }}/.kube/completion.bash.inc
 
     - name: Enable bash completion for kubectl
       become: yes

@@ -29,9 +29,11 @@
     line: "{{ nfs_path }} *(insecure,rw,async,no_subtree_check,no_root_squash)"
     regexp: '^{{ nfs_path }}.*'
     create: yes
+  register: nfs_export
 
 - name: Restart nfs server
   service:
     name: nfs-server
     state: restarted
     enabled: yes
+  when: nfs_export is changed
