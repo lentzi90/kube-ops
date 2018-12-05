@@ -12,34 +12,6 @@
     state: absent
     regexp: '^127\.0\.\d+\.\d+\s+{{ inventory_hostname }}'
 
-- name: Install commonly needed packages
-  yum:
-    name:
-      - nfs-utils
-      - libselinux-python
-  when: ansible_distribution == 'CentOS'
-
-- name: Install commonly needed packages
-  apt:
-    name:
-      - nfs-common
-      - apt-transport-https
-  when: ansible_distribution == 'Ubuntu'
-
-- name: Fix DNS on ubuntu bionic
-  when: ansible_distribution_release == 'bionic'
-  block:
-    - name: Use google nameservers
-      lineinfile:
-        destfile: /etc/netplan/01-netcfg.yaml
-        regexp: '^(\s+addresses:\s)(.*)$'
-        line: '\1[8.8.8.8, 8.8.4.4]'
-        backrefs: yes
-      register: netplan_config
-    - name: Apply DNS config
-      command: netplan apply
-      when: netplan_config is changed
-
 - name: Remove swap
   lineinfile:
     dest: /etc/fstab
@@ -51,77 +23,10 @@
   command: swapoff --all
   when: removed_swap is changed
 
-- include_tasks: docker.yml
+- include_tasks: centos-kubernetes.yml
   when: ansible_distribution == 'CentOS'
 
-- name: Install docker
-  apt:
-    name: docker.io
-    update_cache: yes
-  when: ansible_distribution == 'Ubuntu'
-
-- name: Add kubernetes repository
-  # Default ansible version on ubuntu does not support "disable_excludes"
-  # so we avoid excluding kubernetes packages here.
-  # Add this to the block when it is supported.
-  # exclude=kube*
-  blockinfile:
-    create: yes
-    path: /etc/yum.repos.d/kubernetes.repo
-    block: |
-      [kubernetes]
-      name=Kubernetes
-      baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
-      enabled=1
-      gpgcheck=1
-      repo_gpgcheck=1
-      gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-  when: ansible_distribution == 'CentOS'
-
-- name: Add kubernetes apt key
-  apt_key:
-    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
-  when: ansible_distribution == 'Ubuntu'
-
-- name: Add kubernetes repository
-  apt_repository:
-    repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
-  register: kubernetes_repo
-  when: ansible_distribution == 'Ubuntu'
-
-- name: Update apt cache
-  apt:
-    update_cache: yes
-  when:
-    - kubernetes_repo is changed
-    - ansible_distribution == 'Ubuntu'
-
-- name: Disable SELinux
-  selinux:
-    policy: targeted
-    state: permissive
-  when: ansible_distribution == 'CentOS'
-
-
-- name: Install kubernetes parts
-  yum:
-    name:
-      - kubelet-{{ k8s_version }}-0
-      - kubeadm-{{ k8s_version }}-0
-      - kubectl-{{ k8s_version }}-0
-    state: present
-    # When ubuntu has ansible version 2.7, enable this again
-    # disable_excludes: all
-    update_cache: yes
-  when: ansible_distribution == 'CentOS'
-
-- name: Install kubernetes parts
-  apt:
-    name:
-      - kubelet={{ k8s_version }}-00
-      - kubeadm={{ k8s_version }}-00
-      - kubectl={{ k8s_version }}-00
-    state: present
+- include_tasks: ubuntu-kubernetes.yml
   when: ansible_distribution == 'Ubuntu'
 
 - name: Enable kubelet
