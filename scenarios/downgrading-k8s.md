@@ -12,12 +12,14 @@ In this scenario we practice downgrading immediately after the
 control plane is upgraded but don't upgrade the kubelet packages.
 
 ```
-# Downgrade kubeadm
+# ubuntu
 sudo apt-mark unhold kubeadm
-sudo apt install kubeadm=1.11.4-00
+sudo apt install kubeadm=1.12.3-00
+# centos
+sudo yum install kubeadm-1.12.3-0 --disableexcludes=kubernetes
 ```
 
-You can now try downgrading by executing `kubeadm upgrade apply v1.11.4`.
+You can now try downgrading by executing `kubeadm upgrade apply v1.12.3`.
 If it doesn't work, reset the master: `sudo kubeadm reset` and continue by
 restoring and initializing the master just as in the restore scenario.
 
@@ -30,12 +32,14 @@ the way. You should follow the upgrade guide to completion before continuing.
 
 ```
 # Downgrade node config on all non-master nodes
-sudo kubeadm upgrade node config --kubelet-version v1.11.4
-# Downgrade kubelet and kubeadm on all nodes
+sudo kubeadm upgrade node config --kubelet-version v1.12.3
+# Downgrade kubelet and kubeadm on all nodes (ubuntu)
 sudo apt-mark unhold kubelet kubeadm
-sudo apt install kubelet=1.11.4-00 kubeadm=1.11.4-00
+sudo apt install kubelet=1.12.3-00 kubeadm=1.12.3-00
 sudo apt-mark hold kubelet kubeadm
+# centos
+sudo yum install kubelet-1.12.3-0 kubeadm-1.12.3-0 --disableexcludes=kubernetes
 ```
 
-It seems to be possible to downgrade now with `kubeadm upgrade apply v1.11.4`.
+It seems to be possible to downgrade now with `kubeadm upgrade apply v1.12.3`.
 In case this fails, just reset the master and restore the backup.
