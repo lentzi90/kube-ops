@@ -1,5 +1,5 @@
 ---
-- hosts: master
+- hosts: masters[0]
   become: yes
   become_user: root
   tasks:
@@ -17,6 +17,6 @@
   become_user: root
   tasks:
     - name: Join the cluster
-      command: "{{ hostvars.master.join_command }}"
+      command: "{{ hostvars[groups.masters.0].join_command }}"
       args:
         creates: /etc/kubernetes/kubelet.conf

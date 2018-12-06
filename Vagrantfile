@@ -1,10 +1,13 @@
 # -*- mode: ruby -*-
 
 hosts = {
-    "master" => { "memory" => 1536, "ip" => "192.168.10.10"},
+    "master1" => { "memory" => 1536, "ip" => "192.168.10.10"},
+    "master2" => { "memory" => 1024, "ip" => "192.168.10.11"},
+    "master3" => { "memory" => 1024, "ip" => "192.168.10.12"},
     "worker1" => { "memory" => 1536, "ip" => "192.168.10.30"},
-    "worker2" => { "memory" => 1536, "ip" => "192.168.10.31"},
-    "worker3" => { "memory" => 1024, "ip" => "192.168.10.32"},
+    "worker2" => { "memory" => 1024, "ip" => "192.168.10.31"},
+    # "worker2" => { "memory" => 1536, "ip" => "192.168.10.31", "box" => "generic/ubuntu1604"},
+    # "worker3" => { "memory" => 1024, "ip" => "192.168.10.32", "box" => "generic/ubuntu1804"},
     "nfs" => { "memory" => 512, "ip" => "192.168.10.20"}
 }
 
@@ -18,7 +21,7 @@ Vagrant.configure("2") do |config|
 
     # Loop over all machine names
     hosts.each_key do |host|
-        config.vm.define host, primary: host == "master" do |node|
+        config.vm.define host, primary: host == hosts.keys.first do |node|
             # Use custom box if set
             if hosts[host]["box"]
                 node.vm.box = hosts[host]["box"]

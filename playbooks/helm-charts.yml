@@ -1,5 +1,5 @@
 ---
-- hosts: master
+- hosts: masters[0]
   tasks:
 
     - name: Download helm

@@ -1,9 +1,9 @@
 ---
-- import_playbook: deploy-kubernetes.yml
-
 - import_playbook: setup-nfs.yml
   tags:
     - nfs
+
+- import_playbook: deploy-kubernetes.yml
 
 - import_playbook: helm-charts.yml
   tags:
