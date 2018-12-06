@@ -61,6 +61,14 @@
       become_user: "{{ ansible_user }}"
       when: initialized is changed
 
+    - name: Wait for master to become ready
+      become: yes
+      become_user: "{{ ansible_user }}"
+      command: kubectl get nodes -o jsonpath='{.items[0].status.conditions[?(@.type=="Ready")].status}'
+      register: master_node_status
+      until: master_node_status.stdout == "True"
+      retries: 30
+
     # allow all service accounts to act as administrators of the cluster
     # See: https://kubernetes.io/docs/admin/authorization/rbac/
     - name: Set service account permissions
