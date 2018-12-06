@@ -1,5 +1,19 @@
 ---
-- import_playbook: setup-nfs.yml
+- hosts: loadbalancers
+  become: yes
+  become_user: root
+  strategy: free
+  roles:
+    - loadbalancer
+  tags:
+    - loadbalancer
+
+- hosts: nfs_servers
+  become: yes
+  become_user: root
+  strategy: free
+  roles:
+    - nfs-server
   tags:
     - nfs
 

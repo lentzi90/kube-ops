@@ -8,11 +8,8 @@ apiVersion: kubeadm.k8s.io/v1beta1
 kind: ClusterConfiguration
 apiServer:
   certSANs:
-    - {{ ansible_host }}
-{% if control_plane_endpoint is defined %}
-    - {{ control_plane_endpoint }}
-controlPlaneEndpoint: {{ control_plane_endpoint }}
-{% endif %}
+    - {{ control_plane_endpoint | default(ansible_host) }}
+controlPlaneEndpoint: {{ control_plane_endpoint | default(ansible_host) }}
 kubernetesVersion: v{{ k8s_version }}
 networking:
   podSubnet: {{ k8s_pod_cidr }}
@@ -27,7 +24,8 @@ apiEndpoint:
 apiVersion: kubeadm.k8s.io/v1alpha3
 kind: ClusterConfiguration
 apiServerCertSANs:
-  - {{ ansible_host }}
+  - {{ control_plane_endpoint | default(ansible_host) }}
+controlPlaneEndpoint: {{ control_plane_endpoint | default(ansible_host) }}
 kubernetesVersion: v{{ k8s_version }}
 networking:
   podSubnet: {{ k8s_pod_cidr }}
