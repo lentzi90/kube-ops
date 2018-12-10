@@ -1,12 +1,3 @@
-# Docker from the normal repository
-
-# - name: Install docker
-#   yum:
-#     name: docker
-
-# ----------------------------------
-
-# Docker CE
 
 - name: Install prereqs
   yum:

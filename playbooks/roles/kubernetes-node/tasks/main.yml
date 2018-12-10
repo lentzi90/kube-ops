@@ -23,10 +23,31 @@
   command: swapoff --all
   when: removed_swap is changed
 
-- include_tasks: centos-kubernetes.yml
+- name: Disable SELinux
+  selinux:
+    policy: targeted
+    state: permissive
   when: ansible_distribution == 'CentOS'
 
-- include_tasks: ubuntu-kubernetes.yml
+- name: Install kubernetes parts
+  yum:
+    name:
+      - kubelet-{{ k8s_version }}-0
+      - kubeadm-{{ k8s_version }}-0
+      - kubectl-{{ k8s_version }}-0
+    state: present
+    # When ubuntu has ansible version 2.7, enable this again
+    # disable_excludes: all
+    update_cache: yes
+  when: ansible_distribution == 'CentOS'
+
+- name: Install kubernetes parts
+  apt:
+    name:
+      - kubelet={{ k8s_version }}-00
+      - kubeadm={{ k8s_version }}-00
+      - kubectl={{ k8s_version }}-00
+    state: present
   when: ansible_distribution == 'Ubuntu'
 
 - name: Enable kubelet

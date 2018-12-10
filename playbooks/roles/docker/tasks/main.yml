@@ -1,0 +1,9 @@
+
+- include_tasks: centos-docker-ce.yml
+  when: ansible_distribution == 'CentOS'
+
+- name: Install docker.io
+  apt:
+    name: docker.io
+    state: present
+  when: ansible_distribution == 'Ubuntu'
