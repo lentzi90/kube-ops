@@ -77,3 +77,16 @@ When the node is ready for action again, mark it as schedulable:
 ```
 kubectl uncordon <node-name>
 ```
+
+# Upgrading HA k8s
+
+Upgrading a cluster with HA control plane is quite similar to the above.
+See [this page](https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade-ha-1-13/)
+for precise instructions.
+
+The main difference is that you should run
+```
+kubeadm upgrade node experimental-control-plane
+```
+on all additional control plane nodes. For the upgrade from 1.12 to 1.13 you
+also have to edit the kubeadm configmap manually.
