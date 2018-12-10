@@ -81,3 +81,7 @@
       command: "{{ hostvars[groups.masters.0].join_command }} --experimental-control-plane"
       args:
         creates: /etc/kubernetes/kubelet.conf
+      when: k8s_version.startswith("1.13")
+
+- import_playbook: ha-1.12.yml
+  when: k8s_version.startswith("1.12")
