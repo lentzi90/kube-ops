@@ -77,6 +77,11 @@
         - pki/etcd/ca.key
         - admin.conf
 
+- hosts: masters[1:]
+  become: yes
+  become_user: root
+  serial: 1
+  tasks:
     - name: Join the control plane
       command: "{{ hostvars[groups.masters.0].join_command }} --experimental-control-plane"
       args:
