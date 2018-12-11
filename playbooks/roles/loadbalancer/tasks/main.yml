@@ -36,19 +36,6 @@
           server {{ master }} {{ hostvars[master].ansible_host }}:6443 check
           {% endfor %}
       {% endif %}
-      {% if 'workers' in groups %}
-      frontend http
-          bind *:80
-          mode http
-          default_backend k8s_workers
-      backend k8s_workers
-          balance roundrobin
-          mode http
-          option forwardfor
-          {% for worker in groups.workers -%}
-          server {{ worker }} {{ hostvars[worker].ansible_host }}:80 check
-          {% endfor %}
-      {% endif %}
 
 - name: Start haproxy
   service:

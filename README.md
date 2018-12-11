@@ -108,7 +108,7 @@ A number of scenarios with instructions and commands are available in the
 ## Test application: wordpress
 
 The vagrant environment contains a wordpress deployment to simulate a workload.
-Add `192.168.10.20 example.com wordpress.example.com` to `/etc/hosts` in order
+Add `192.168.10.40 example.com wordpress.example.com` to `/etc/hosts` in order
 to access wordpress at `wordpress.example.com`. Or maybe [set up dnsmasq](https://www.linux.com/learn/intro-to-linux/2018/2/advanced-dnsmasq-tips-and-tricks)
 to resolve the whole kube-ops domain to the loadbalancer.
 
@@ -121,6 +121,7 @@ There are a few other components deployed in the cluster as base infrastructure.
 for persistent volume provisioning
 - [nginx-ingress](https://hub.kubeapps.com/charts/stable/nginx-ingress) as
 ingress controller
+- [metallb](https://hub.kubeapps.com/charts/stable/metallb) as loadbalancer
 
 ## Issues to be aware of
 

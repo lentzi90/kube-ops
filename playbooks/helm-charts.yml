@@ -10,12 +10,16 @@
         dest: /tmp
         remote_src: yes
       register: download_helm
+      tags:
+        - helm
 
     - name: Install helm
       become: yes
       become_user: root
       command: mv /tmp/linux-amd64/helm /usr/local/bin/helm
       when: download_helm is changed
+      tags:
+        - helm
 
     - name: Init helm
       command: helm init
@@ -29,6 +33,20 @@
       retries: 20
       tags:
         - helm
+
+    - name: Write metallb values file
+      template:
+        src: metallb-values.yaml.j2
+        dest: /home/{{ ansible_user }}/metallb-values.yaml
+      tags:
+        - metallb
+
+    - name: Deploy metallb
+      command: >
+        helm upgrade --install metallb stable/metallb
+          -f /home/{{ ansible_user }}/metallb-values.yaml
+      tags:
+        - metallb
 
     - name: Deploy nfs client provisioner
       command: >
