@@ -14,6 +14,17 @@ ansible-playbook playbooks/provision-all.yml
 There is no need to specify the inventory since it is already configured in
 `ansible.cfg`.
 
+Once ansible is finished provisioning you can access the cluster from the master
+node or from the nfs server. Example:
+```
+$ vagrant ssh nfs
+$ kubectl get nodes
+NAME      STATUS   ROLES    AGE    VERSION
+master1   Ready    master   112m   v1.13.0
+worker1   Ready    <none>   111m   v1.13.0
+worker2   Ready    <none>   111m   v1.13.0
+```
+
 ## Requirements
 
 - [Vagrant](https://www.vagrantup.com/)
@@ -24,6 +35,17 @@ If you want to use vagrant with the libvirt provider, make sure you set up
 libvirt with KVM first and install the `vagrant-libvirt` plugin.
 Instructions for setting up libvirt with KVM on Ubuntu can be found [here](https://help.ubuntu.com/community/KVM/Installation).
 The `vagrant-libvirt` plugin can be found [here](https://github.com/vagrant-libvirt/vagrant-libvirt).
+
+## Architecture
+
+Vagrant is used to create virtual machines according to the specification in
+the `Vagrantfile`. These machines are then provisioned using ansible playbooks
+to form a Kubernetes cluster, NFS server and load balancer. The architecture
+is similar to this diagram.
+
+![Example architecture with 3 masters](images/kube-ops-infra.png)
+
+Note that the default configuration only has a single master node.
 
 ## Options
 
@@ -110,7 +132,8 @@ A number of scenarios with instructions and commands are available in the
 The vagrant environment contains a wordpress deployment to simulate a workload.
 Add `192.168.10.40 example.com wordpress.example.com` to `/etc/hosts` in order
 to access wordpress at `wordpress.example.com`. Or maybe [set up dnsmasq](https://www.linux.com/learn/intro-to-linux/2018/2/advanced-dnsmasq-tips-and-tricks)
-to resolve the whole kube-ops domain to the loadbalancer.
+to resolve the whole kube-ops domain to the IP address of the ingress
+controller.
 
 See `playbooks/templates/wordpress-production.yaml.j2` for configuration values.
 The login credentials are `kube-ops:p455w0rd` at http://wordpress.example.com/wp-admin.
@@ -121,7 +144,20 @@ There are a few other components deployed in the cluster as base infrastructure.
 for persistent volume provisioning
 - [nginx-ingress](https://hub.kubeapps.com/charts/stable/nginx-ingress) as
 ingress controller
-- [metallb](https://hub.kubeapps.com/charts/stable/metallb) as loadbalancer
+- [metallb](https://hub.kubeapps.com/charts/stable/metallb) as load balancer
+
+Here is a diagram describing how a request flows through the system.
+
+![Ingress flow in k8s](images/kube-ops-apps.png)
+
+The metalLB is configured to use IP addresses from `192.168.10.40` to
+`192.168.10.50`. Since the nginx ingress controller is the first and only
+application in the cluster with a service of type LoadBalancer, it will get the
+IP address `192.168.10.40`.
+
+The NFS provisioner is responsible for creating persistent volumes from the NFS
+server. It polls the API server for new persistent volume claims and creates
+a new volume as soon as it detects a new claim.
 
 ## Issues to be aware of
 
