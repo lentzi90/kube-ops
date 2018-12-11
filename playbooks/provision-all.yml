@@ -1,4 +1,14 @@
 ---
+- hosts: all
+  gather_facts: no
+  tasks:
+    - name: Install python if needed
+      become: yes
+      become_user: root
+      raw: test -e /usr/bin/python || yum install -y python2 || (apt -y update && apt install -y python-minimal)
+  tags:
+    - prereq
+
 - hosts: loadbalancers
   become: yes
   become_user: root
@@ -18,6 +28,12 @@
     - nfs
 
 - import_playbook: deploy-kubernetes.yml
+  tags:
+    - kubernetes
+
+- import_playbook: set-up-client.yml
+  tags:
+    - client
 
 - import_playbook: helm-charts.yml
   tags:

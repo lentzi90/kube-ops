@@ -20,51 +20,12 @@
         creates: /etc/kubernetes/admin.conf
       register: initialized
 
-    - name: Create config directory
-      file:
-        path: /home/{{ ansible_user }}/.kube
-        state: directory
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
-
-    - name: Copy config
-      command: cp /etc/kubernetes/admin.conf /home/{{ ansible_user }}/.kube/config
-      when: initialized is changed
-
-    - name: Set permissions for kubeconfig
-      file:
-        path: /home/{{ ansible_user }}/.kube/config
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
-        mode: "u=rw,g=r,o=r"
-        state: file
-
-    - name: Store bash completion code for kubectl
-      become: yes
-      become_user: "{{ ansible_user }}"
-      shell: kubectl completion bash > ~/.kube/completion.bash.inc
-      args:
-        creates: /home/{{ ansible_user }}/.kube/completion.bash.inc
-
-    - name: Enable bash completion for kubectl
-      become: yes
-      become_user: "{{ ansible_user }}"
-      blockinfile:
-        path: /home/{{ ansible_user }}/.bashrc
-        block: |
-          # Kubectl shell completion
-          source '/home/{{ ansible_user }}/.kube/completion.bash.inc'
-
     - name: Install weave network
-      shell: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
-      become: yes
-      become_user: "{{ ansible_user }}"
+      shell: kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
       when: initialized is changed
 
     - name: Wait for master to become ready
-      become: yes
-      become_user: "{{ ansible_user }}"
-      command: kubectl get nodes -o jsonpath='{.items[0].status.conditions[?(@.type=="Ready")].status}'
+      command: kubectl --kubeconfig /etc/kubernetes/admin.conf get nodes -o jsonpath='{.items[0].status.conditions[?(@.type=="Ready")].status}'
       register: master_node_status
       until: master_node_status.stdout == "True"
       retries: 30
@@ -78,6 +39,5 @@
           --user=admin
           --user=kubelet
           --group=system:serviceaccounts
-      become: yes
-      become_user: "{{ ansible_user }}"
+          --kubeconfig /etc/kubernetes/admin.conf
       when: initialized is changed

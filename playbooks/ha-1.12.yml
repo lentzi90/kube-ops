@@ -45,7 +45,7 @@
 
     - name: Join etcd cluster
       command: >
-        kubectl exec --kubeconfig /etc/kubernetes/admin.conf -n kube-system
+        kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system exec
           etcd-{{ groups.masters.0 }} --
             etcdctl --ca-file /etc/kubernetes/pki/etcd/ca.crt
             --cert-file /etc/kubernetes/pki/etcd/peer.crt

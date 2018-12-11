@@ -1,0 +1,28 @@
+
+- name: Install kubectl
+  package:
+    name: kubectl
+    state: present
+
+- name: Create .kube directory
+  file:
+    path: /home/{{ ansible_user }}/.kube
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+- name: Store bash completion code for kubectl
+  become: yes
+  become_user: "{{ ansible_user }}"
+  shell: kubectl completion bash > ~/.kube/completion.bash.inc
+  args:
+    creates: /home/{{ ansible_user }}/.kube/completion.bash.inc
+
+- name: Enable bash completion for kubectl
+  become: yes
+  become_user: "{{ ansible_user }}"
+  blockinfile:
+    path: /home/{{ ansible_user }}/.bashrc
+    block: |
+      # Kubectl shell completion
+      source '/home/{{ ansible_user }}/.kube/completion.bash.inc'

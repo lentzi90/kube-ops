@@ -1,0 +1,42 @@
+---
+- hosts: clients
+  become: yes
+  become_user: root
+  strategy: free
+  roles:
+    - kubernetes-client
+  tags:
+    - client
+
+- hosts: masters[0]
+  become: yes
+  become_user: root
+  tags:
+    - kubeconfig
+  tasks:
+    - name: Copy kubeconfig from first master
+      fetch:
+        src: /etc/kubernetes/admin.conf
+        dest: tmp/admin.conf
+        flat: yes
+
+- hosts: clients
+  become: yes
+  become_user: root
+  tags:
+    - kubeconfig
+  tasks:
+    - name: Copy kubeconfig to clients
+      copy:
+        src: tmp/admin.conf
+        dest: /home/{{ ansible_user }}/.kube/config
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+
+    - name: Clean up temporary files
+      become: no
+      run_once: yes
+      file:
+        path: tmp
+        state: absent
+      delegate_to: localhost
