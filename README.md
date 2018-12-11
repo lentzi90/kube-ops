@@ -27,9 +27,20 @@ The `vagrant-libvirt` plugin can be found [here](https://github.com/vagrant-libv
 
 ## Options
 
-If you want to use virtualbox, just install virtualbox and vagrant and change
-the `inventory.ini` file to use the virtualbox block instead of the libvirt one.
-Like this:
+There are multiple ways to configure the vagrant cluster. This section describes
+some of the possibilities, but by no means all of them.
+
+Check the `examples` folder for some example configurations. It contains
+inventory files ending with `.ini` and vagrant files starting with
+`Vagrantfile`. If you wish to try one of the examples, replace the `Vagrantfile`
+with the example vagrant file (e.g. `mv examples/Vagrantfile.ha Vagrantfile`).
+It is already configured to use the corresponding example inventory.
+
+### Virtualization provider
+
+If you want to use virtualbox instead of libvirt, just install virtualbox and
+change the `inventory.ini` file to use the virtualbox block instead of the
+libvirt one. Like this:
 
 ```
 ; Libvirt
@@ -46,8 +57,10 @@ worker3 ansible_host=192.168.10.32 ansible_port=22 ansible_user='vagrant' ansibl
 nfs ansible_host=192.168.10.20 ansible_port=22 ansible_user='vagrant' ansible_ssh_private_key_file='.vagrant/machines/nfs/virtualbox/private_key'
 ```
 
-You can also choose between Ubuntu and CentOS as operating system for the nodes.
-Simply uncomment the vagrant box you want to use in `Vagrantfile`:
+### Operating system
+
+You can choose between Ubuntu and CentOS as operating system for the nodes.
+Simply uncomment the vagrant box you want to use in the `Vagrantfile`:
 ```ruby
 config.vm.box = "centos/7"
 # config.vm.box = "generic/ubuntu1604"
@@ -63,6 +76,23 @@ hosts = {
     "nfs" => { "memory" => 512, "ip" => "192.168.10.20"}
 }
 ```
+
+### High availability control plane
+
+The provided playbooks support setting up a HA control plane for kubernetes
+versions 1.12 and 1.13. You will need at least three master nodes configured
+both in the `Vagrantfile` and in the `inventory.ini` file. Additionally, you
+probably want to set up an external client instead of relying on one of the
+masters for talking to the API. You can for example use the nfs/loadbalancer
+machine. See `examples/ha.ini` and `examples/Vagrantfile.ha` for an example
+on how to configure this.
+
+### Running playbooks manually
+
+You may want to run some playbooks manually, for example if something fails or
+if you don't want to do the full provisioning. Rerunning playbooks should not be
+a problem, they are written to be idempotent. Check the `playbooks` folder for
+more information about the playbooks.
 
 ## Ops Scenarios
 
@@ -99,7 +129,7 @@ that causes pods to remain in unknown state on nodes that are not ready, if they
 have volumes attached.
     - [shutdown taint issue](https://github.com/kubernetes/kubernetes/issues/58635)
 - Helm does not automatically update repository information. Make sure you get
-version you want of all charts, and if needed run `helm repo update`.
+the version you want of all charts, and if needed run `helm repo update`.
 - Be careful what you wish for: pod disruption budgets won't stop nodes from
 going down, but they will prevent you from evicting pods!
 - Backing up only etcd data and root certificate is not enough. Old secrets
