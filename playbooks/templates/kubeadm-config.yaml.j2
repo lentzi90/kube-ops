@@ -55,17 +55,3 @@ kubernetesVersion: v{{ k8s_version }}
 networking:
   podSubnet: {{ k8s_pod_cidr }}
 {% endif %}
-
-{% if k8s_version.startswith("1.11") %}
-apiVersion: kubeadm.k8s.io/v1alpha2
-kind: MasterConfiguration
-# Additional hostnames or IP addresses that should be added to the
-# Subject Alternate Name section for the certificate that the API Server will
-# use. For example, a public DNS name or a public IP.
-apiServerCertSANs:
-  - {{ ansible_host }}
-api:
-  advertiseAddress: {{ master_advertise_ip }}
-networking:
-  podSubnet: {{ k8s_pod_cidr }}
-{% endif %}
