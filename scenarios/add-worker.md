@@ -14,8 +14,9 @@ hosts = {
 ```
 
 Make sure that the inventory file (`inventory.ini`) is up to date with the new
-worker and correct `k8s_version` for example. Then run the playbook:
+worker and correct `k8s_version` for example. Then run the playbooks:
 ```
+ansible-playbook playbooks/provision-all.yml --tags prereq
 ansible-playbook playbooks/deploy-kubernetes.yml
 ```
 
