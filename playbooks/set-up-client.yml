@@ -5,6 +5,7 @@
   strategy: free
   roles:
     - kubernetes-client
+    - helm
   tags:
     - client
 

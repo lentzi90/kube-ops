@@ -1,0 +1,18 @@
+- name: Download helm
+  become: yes
+  become_user: root
+  unarchive:
+    src: https://storage.googleapis.com/kubernetes-helm/helm-v{{ helm_version }}-linux-amd64.tar.gz
+    dest: /tmp
+    remote_src: yes
+  register: download_helm
+  tags:
+    - helm
+
+- name: Install helm
+  become: yes
+  become_user: root
+  command: mv /tmp/linux-amd64/helm /usr/local/bin/helm
+  when: download_helm is changed
+  tags:
+    - helm
