@@ -13,11 +13,16 @@ hosts = {
 
 Vagrant.configure("2") do |config|
     # Choose which box you want below
-    config.vm.box = "centos/7"
+    # config.vm.box = "centos/7"
     # config.vm.box = "generic/ubuntu1604"
-    # config.vm.box = "generic/ubuntu1804"
+    config.vm.box = "generic/ubuntu1804"
 
     config.vm.synced_folder ".", "/vagrant", disabled: true
+
+    config.vm.provider :libvirt do |libvirt|
+      # QEMU system connection is required for private network configuration
+      libvirt.qemu_use_session = false
+    end
 
     # Loop over all machine names
     hosts.each_key do |host|
