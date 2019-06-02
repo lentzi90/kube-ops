@@ -22,15 +22,12 @@
         - helm
 
     - name: Init helm
-      command: helm init
+      command: helm init --upgrade --wait
       tags:
         - helm
 
     - name: Wait for tiller to start
-      command: kubectl get deployment --all-namespaces -l app=helm,name=tiller -o json
-      register: tiller_pod
-      until: tiller_pod.stdout | from_json | json_query('items[0].status.availableReplicas') >= 1
-      retries: 20
+      command: kubectl -n kube-system rollout status deployment tiller-deploy
       tags:
         - helm
 
