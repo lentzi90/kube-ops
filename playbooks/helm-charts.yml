@@ -40,14 +40,14 @@
 
     - name: Deploy metallb
       command: >
-        helm upgrade --install metallb stable/metallb
+        helm upgrade --install metallb stable/metallb --version 0.9.5
           -f /home/{{ ansible_user }}/metallb-values.yaml
       tags:
         - metallb
 
     - name: Deploy nfs client provisioner
       command: >
-        helm upgrade --install nfs-provisioner
+        helm upgrade --install nfs-provisioner --version 1.2.5
           --set nfs.server={{ nfs_server }}
           --set nfs.path={{ nfs_path }}
           --set storageClass.defaultClass=true
@@ -83,6 +83,7 @@
     - name: Deploy nginx ingress controller
       command: >
         helm upgrade --install ingress-controller stable/nginx-ingress
+          --version 1.6.16
           -f /home/{{ ansible_user }}/ingress-chart-values.yaml
       tags:
         - ingress
@@ -97,6 +98,7 @@
     - name: Deploy wordpress
       command: >
         helm upgrade --install wordpress stable/wordpress
+          --version 5.11.0
           -f /home/{{ ansible_user }}/wordpress-production.yaml
       tags:
         - wordpress
