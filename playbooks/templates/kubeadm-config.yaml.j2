@@ -1,20 +1,3 @@
-{% if k8s_version.startswith("1.13") %}
-apiVersion: kubeadm.k8s.io/v1beta1
-kind: InitConfiguration
-localAPIEndpoint:
-  advertiseAddress: {{ ansible_host }}
----
-apiVersion: kubeadm.k8s.io/v1beta1
-kind: ClusterConfiguration
-apiServer:
-  certSANs:
-    - {{ control_plane_endpoint | default(ansible_host) }}
-controlPlaneEndpoint: {{ control_plane_endpoint | default(ansible_host) }}
-kubernetesVersion: v{{ k8s_version }}
-networking:
-  podSubnet: {{ k8s_pod_cidr }}
-{% endif %}
-
 {% if k8s_version.startswith("1.12") %}
 apiVersion: kubeadm.k8s.io/v1alpha3
 kind: InitConfiguration
@@ -50,6 +33,24 @@ etcd:
       - {{ ansible_hostname }}
       - {{ ansible_host }}
 {% endif %}
+controlPlaneEndpoint: {{ control_plane_endpoint | default(ansible_host) }}
+kubernetesVersion: v{{ k8s_version }}
+networking:
+  podSubnet: {{ k8s_pod_cidr }}
+
+{% else %}
+
+{# Configuration for 1.13 and 1.14 #}
+apiVersion: kubeadm.k8s.io/v1beta1
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: {{ ansible_host }}
+---
+apiVersion: kubeadm.k8s.io/v1beta1
+kind: ClusterConfiguration
+apiServer:
+  certSANs:
+    - {{ control_plane_endpoint | default(ansible_host) }}
 controlPlaneEndpoint: {{ control_plane_endpoint | default(ansible_host) }}
 kubernetesVersion: v{{ k8s_version }}
 networking:

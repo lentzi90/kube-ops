@@ -83,10 +83,10 @@
   serial: 1
   tasks:
     - name: Join the control plane
-      command: "{{ hostvars[groups.masters.0].join_command }} --experimental-control-plane"
+      command: "{{ hostvars[groups.masters.0].join_command }} --experimental-control-plane --apiserver-advertise-address {{ ansible_host }}"
       args:
         creates: /etc/kubernetes/kubelet.conf
-      when: k8s_version.startswith("1.13")
+      when: not k8s_version.startswith("1.12")
 
 - import_playbook: ha-1.12.yml
   when: k8s_version.startswith("1.12")
