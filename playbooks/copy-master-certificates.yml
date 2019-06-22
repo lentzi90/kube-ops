@@ -1,0 +1,70 @@
+---
+- hosts: masters[0]
+  become: yes
+  become_user: root
+  tasks:
+
+    - name: Copy certificates from first master
+      fetch:
+        src: /etc/kubernetes/{{ item }}
+        dest: tmp/{{ item }}
+        flat: yes
+      with_items:
+        - pki/ca.crt
+        - pki/ca.key
+        - pki/sa.key
+        - pki/sa.pub
+        - pki/front-proxy-ca.crt
+        - pki/front-proxy-ca.key
+        - pki/etcd/ca.crt
+        - pki/etcd/ca.key
+        - admin.conf
+
+- hosts: masters[1:]
+  become: yes
+  become_user: root
+  tasks:
+    - name: Create directories
+      file:
+        path: /etc/kubernetes/{{ item }}
+        state: directory
+      with_items:
+        - pki
+        - pki/etcd
+
+    - name: Copy certificates to other masters
+      copy:
+        src: tmp/{{ item }}
+        dest: /etc/kubernetes/{{ item }}
+        owner: root
+        group: root
+      with_items:
+        - pki/ca.crt
+        - pki/ca.key
+        - pki/sa.key
+        - pki/sa.pub
+        - pki/front-proxy-ca.crt
+        - pki/front-proxy-ca.key
+        - pki/etcd/ca.crt
+        - pki/etcd/ca.key
+        - admin.conf
+
+    - name: Clean up certificates
+      become: no
+      run_once: yes
+      file:
+        path: tmp
+        state: absent
+      delegate_to: localhost
+
+    - name: Correct permissions
+      file:
+        path: /etc/kubernetes/{{ item }}
+        mode: u=rw,g=,o=
+      with_items:
+        - pki/ca.key
+        - pki/sa.key
+        - pki/sa.pub
+        - pki/front-proxy-ca.key
+        - pki/etcd/ca.key
+        - admin.conf
