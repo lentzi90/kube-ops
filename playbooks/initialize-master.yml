@@ -29,15 +29,3 @@
       register: master_node_status
       until: master_node_status.stdout == "True"
       retries: 30
-
-    # allow all service accounts to act as administrators of the cluster
-    # See: https://kubernetes.io/docs/admin/authorization/rbac/
-    - name: Set service account permissions
-      command: >
-        kubectl create clusterrolebinding permissive-binding
-          --clusterrole=cluster-admin
-          --user=admin
-          --user=kubelet
-          --group=system:serviceaccounts
-          --kubeconfig /etc/kubernetes/admin.conf
-      when: initialized is changed
