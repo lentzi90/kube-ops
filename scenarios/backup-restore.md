@@ -25,7 +25,7 @@ sudo docker run --rm -v $(pwd)/backup:/backup \
     --network host \
     -v /etc/kubernetes/pki/etcd:/etc/kubernetes/pki/etcd \
     --env ETCDCTL_API=3 \
-    k8s.gcr.io/etcd-amd64:3.2.18 \
+    k8s.gcr.io/etcd:3.4.3-0 \
     etcdctl --endpoints=https://127.0.0.1:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt --key=/etc/kubernetes/pki/etcd/healthcheck-client.key snapshot save /backup/etcd-snapshot-latest.db
 
 # Backup kubeadm-config
@@ -37,7 +37,7 @@ sudo cp /etc/kubeadm/kubeadm-config.yaml backup/
 Make the master go down by reverting everything that `kubeadm init` did.
 
 ```
-sudo kubeadm reset
+sudo kubeadm reset --skip-phases remove-etcd-member
 ```
 
 A more drastic alternative is to destroy the node completely:
@@ -64,7 +64,7 @@ sudo docker run --rm \
     -v $(pwd)/backup:/backup \
     -v /var/lib/etcd:/var/lib/etcd \
     --env ETCDCTL_API=3 \
-    k8s.gcr.io/etcd-amd64:3.2.18 \
+    k8s.gcr.io/etcd:3.4.3-0 \
     /bin/sh -c "etcdctl snapshot restore '/backup/etcd-snapshot-latest.db' ; mv /default.etcd/member/ /var/lib/etcd/"
 
 # Restore kubeadm-config
