@@ -2,7 +2,7 @@
   become: yes
   become_user: root
   unarchive:
-    src: https://storage.googleapis.com/kubernetes-helm/helm-v{{ helm_version }}-linux-amd64.tar.gz
+    src: https://get.helm.sh/helm-v{{ helm_version }}-linux-amd64.tar.gz
     dest: /tmp
     remote_src: yes
   register: download_helm

@@ -2,26 +2,6 @@
 - hosts: clients[0]
   tasks:
 
-    - name: Create service account for tiller
-      shell: kubectl -n kube-system create sa tiller --dry-run -o yaml | kubectl apply -f -
-      tags:
-        - helm
-
-    - name: Make tiller service account cluster-admin
-      shell: kubectl create clusterrolebinding helm-admin --clusterrole=cluster-admin --serviceaccount=kube-system:tiller --dry-run -o yaml | kubectl apply -f -
-      tags:
-        - helm
-
-    - name: Init helm
-      command: helm init --service-account tiller --upgrade --wait
-      tags:
-        - helm
-
-    - name: Wait for tiller to start
-      command: kubectl -n kube-system rollout status deployment tiller-deploy
-      tags:
-        - helm
-
     - name: Write metallb values file
       template:
         src: metallb-values.yaml.j2
