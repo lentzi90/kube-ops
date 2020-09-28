@@ -2,6 +2,14 @@
 - hosts: clients[0]
   tasks:
 
+    - name: Add helm repos
+      command: "{{ item }}"
+      loop:
+        - helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+        - helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+        - helm repo add bitnami https://charts.bitnami.com/bitnami
+        - helm repo update
+
     - name: Write metallb values file
       template:
         src: metallb-values.yaml.j2
@@ -11,14 +19,14 @@
 
     - name: Deploy metallb
       command: >
-        helm upgrade --install metallb stable/metallb --version 0.9.7
+        helm upgrade --install metallb bitnami/metallb --version 0.1.24
           -f /home/{{ ansible_user }}/metallb-values.yaml
       tags:
         - metallb
 
     - name: Deploy nfs client provisioner
       command: >
-        helm upgrade --install nfs-provisioner --version 1.2.6
+        helm upgrade --install nfs-provisioner --version 1.2.9
           --set nfs.server={{ nfs_server }}
           --set nfs.path={{ nfs_path }}
           --set storageClass.defaultClass=true
@@ -45,6 +53,7 @@
               externalIPs: {{ worker_ips | to_yaml }}
 
           defaultBackend:
+            enabled: true
             # Allow eviction of pod
             # minAvailable: 0  # default: 1
             replicaCount: 2    # default: 1
@@ -53,8 +62,8 @@
 
     - name: Deploy nginx ingress controller
       command: >
-        helm upgrade --install ingress-controller stable/nginx-ingress
-          --version 1.6.18
+        helm upgrade --install ingress-controller ingress-nginx/ingress-nginx
+          --version 3.3.0
           -f /home/{{ ansible_user }}/ingress-chart-values.yaml
       tags:
         - ingress
@@ -68,8 +77,8 @@
 
     - name: Deploy wordpress
       command: >
-        helm upgrade --install wordpress stable/wordpress
-          --version 5.12.4
+        helm upgrade --install wordpress bitnami/wordpress
+          --version 9.6.2
           -f /home/{{ ansible_user }}/wordpress-production.yaml
       tags:
         - wordpress
