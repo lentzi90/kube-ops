@@ -21,8 +21,6 @@ kubernetes-node role and then running the following playbooks
     - **initialize-master.yml** starts (the first) control plane node and
     installs a network provider.
     - **ha-control-plane.yml** adds additional control plane nodes
-        - **ha-1.12.yml** specific procedure for adding control plane nodes in
-        version 1.12
     - **join-cluster.yml** adds worker nodes to the cluster
 - **helm-charts.yml** installs helm and all charts
 - **set-up-client.yml** installs `kubectl` and adds the kubeconfig file

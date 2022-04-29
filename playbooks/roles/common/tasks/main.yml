@@ -11,17 +11,3 @@
       - nfs-common
       - apt-transport-https
   when: ansible_distribution == 'Ubuntu'
-
-- name: Fix DNS on ubuntu bionic
-  when: ansible_distribution_release == 'bionic'
-  block:
-    - name: Use google nameservers
-      lineinfile:
-        destfile: /etc/netplan/01-netcfg.yaml
-        regexp: '^(\s+addresses:\s)(.*)$'
-        line: '\1[8.8.8.8, 8.8.4.4]'
-        backrefs: yes
-      register: netplan_config
-    - name: Apply DNS config
-      command: netplan apply
-      when: netplan_config is changed

@@ -2,11 +2,6 @@
 - include_tasks: centos-docker-ce.yml
   when: ansible_distribution == 'CentOS'
 
-- name: Set docker version for older k8s
-  set_fact:
-    docker_version: 18.06
-  when: k8s_version.startswith("1.12")
-
 - name: Install docker prereqs
   apt:
     name:

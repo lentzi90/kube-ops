@@ -20,8 +20,7 @@
         creates: /etc/kubernetes/admin.conf
       register: initialized
 
-    - name: Install weave network
-      shell: kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+    - include_tasks: network-add-on.yml
       when: initialized is changed
 
     - name: Wait for master to become ready
