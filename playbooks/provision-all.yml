@@ -5,7 +5,7 @@
     - name: Install python if needed
       become: yes
       become_user: root
-      raw: test -e {{ ansible_python_interpreter }} || yum install -y python || (apt -y update && apt install -y python3-minimal)
+      raw: test -e {{ ansible_python_interpreter }} || dnf install -y python36 || (apt -y update && apt install -y python3-minimal)
   tags:
     - prereq
 

@@ -5,7 +5,7 @@
 
 - name: Install commonly needed packages
   yum:
-    name: libselinux-python
+    name: python3-libselinux
   when: ansible_distribution == 'CentOS'
 
 - name: Disable SELinux

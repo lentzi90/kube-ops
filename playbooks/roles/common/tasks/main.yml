@@ -2,7 +2,7 @@
   yum:
     name:
       - nfs-utils
-      - libselinux-python
+      - python3-libselinux
   when: ansible_distribution == 'CentOS'
 
 - name: Install commonly needed packages for Ubuntu
@@ -11,3 +11,10 @@
       - nfs-common
       - apt-transport-https
   when: ansible_distribution == 'Ubuntu'
+
+- name: Disable firewalld on CentOS
+  service:
+    name: firewalld
+    state: stopped
+    enabled: no
+  when: ansible_distribution == 'CentOS'

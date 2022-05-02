@@ -13,7 +13,7 @@
 
 - name: Install docker
   yum:
-    name: docker-ce-5:{{ docker_version }}*
+    name: docker-ce-3:{{ docker_version }}*
     update_cache: yes
 
 - name: Create /etc/docker directory
