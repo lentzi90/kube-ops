@@ -1,0 +1,84 @@
+## User of the application
+## ref: https://github.com/bitnami/bitnami-docker-wordpress#environment-variables
+##
+wordpressUsername: kube-ops
+
+## Application password
+## Defaults to a random 10-character alphanumeric string if not set
+## ref: https://github.com/bitnami/bitnami-docker-wordpress#environment-variables
+##
+wordpressPassword: p455w0rd
+
+## Admin email
+## ref: https://github.com/bitnami/bitnami-docker-wordpress#environment-variables
+##
+wordpressEmail: kube.ops@example.com
+
+## First name
+## ref: https://github.com/bitnami/bitnami-docker-wordpress#environment-variables
+##
+wordpressFirstName: Kube
+
+## Last name
+## ref: https://github.com/bitnami/bitnami-docker-wordpress#environment-variables
+##
+wordpressLastName: Ops
+
+## Blog name
+## ref: https://github.com/bitnami/bitnami-docker-wordpress#environment-variables
+##
+wordpressBlogName: KubeOps Blog!
+
+replicaCount: 3
+
+## WordPress Pod Disruption Budget configuration
+## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+## @param pdb.create Enable a Pod Disruption Budget creation
+## @param pdb.minAvailable Minimum number/percentage of pods that should remain scheduled
+## @param pdb.maxUnavailable Maximum number/percentage of pods that may be made unavailable
+##
+pdb:
+  create: true
+  minAvailable: 1
+
+## Kubernetes configuration
+## For minikube, set this to NodePort, elsewhere use LoadBalancer or ClusterIP
+##
+service:
+  type: ClusterIP
+
+  ## Enable client source IP preservation
+  ## ref http://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
+  ##
+  externalTrafficPolicy: Local
+
+## Configure the ingress resource that allows you to access the
+## Wordpress installation. Set up the URL
+## ref: http://kubernetes.io/docs/user-guide/ingress/
+##
+ingress:
+  ## Set to true to enable ingress record generation
+  enabled: true
+  ingressClassName: "nginx"
+  hostname: "{{ wordpress_domain | default('wordpress.example.com') }}"
+
+## Enable persistence using Persistent Volume Claims
+## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+##
+persistence:
+  enabled: true
+  ## To use the /admin portal and to ensure you can scale wordpress you need to provide a
+  ## ReadWriteMany PVC, if you dont have a provisioner for this type of storage
+  ## We recommend that you install the nfs provisioner and map it to a RWO volume
+  ## helm install stable/nfs-server-provisioner --set persistence.enabled=true,persistence.size=10Gi
+  accessModes:
+    - ReadWriteMany
+  size: 10Gi
+
+## Configure resource requests and limits
+## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+##
+resources:
+  requests:
+    memory: 512Mi
+    cpu: 300m

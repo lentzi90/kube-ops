@@ -84,17 +84,16 @@ nfs ansible_host=192.168.10.20 ansible_port=22 ansible_user='vagrant' ansible_ss
 You can choose between Ubuntu and CentOS as operating system for the nodes.
 Simply uncomment the vagrant box you want to use in the `Vagrantfile`:
 ```ruby
-config.vm.box = "centos/7"
-# config.vm.box = "generic/ubuntu1604"
-# config.vm.box = "generic/ubuntu1804"
+config.vm.box = "generic/centos8"
+# config.vm.box = "generic/ubuntu2004"
 ```
 OR add the box in the `hosts` hash (see `worker2` and `worker3`):
 ```ruby
 hosts = {
     "master" => { "memory" => 1536, "ip" => "192.168.10.10"},
     "worker1" => { "memory" => 1536, "ip" => "192.168.10.30"},
-    "worker2" => { "memory" => 1536, "ip" => "192.168.10.31", "box" => "generic/ubuntu1604"},
-    "worker3" => { "memory" => 1024, "ip" => "192.168.10.32", "box" => "generic/ubuntu1804"},
+    "worker2" => { "memory" => 1536, "ip" => "192.168.10.31", "box" => "generic/ubuntu2004"},
+    "worker3" => { "memory" => 1024, "ip" => "192.168.10.32", "box" => "generic/ubuntu2004"},
     "nfs" => { "memory" => 512, "ip" => "192.168.10.20"}
 }
 ```
@@ -135,7 +134,7 @@ to access wordpress at `wordpress.example.com`. Or maybe [set up dnsmasq](https:
 to resolve the whole kube-ops domain to the IP address of the ingress
 controller.
 
-See `playbooks/templates/wordpress-production.yaml.j2` for configuration values.
+See `playbooks/templates/wordpress-values.yaml.j2` for configuration values.
 The login credentials are `kube-ops:p455w0rd` at http://wordpress.example.com/wp-admin.
 
 There are a few other components deployed in the cluster as base infrastructure.
