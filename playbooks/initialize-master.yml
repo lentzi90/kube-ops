@@ -1,5 +1,5 @@
 ---
-- hosts: masters[0]
+- hosts: control_plane[0]
   become: yes
   become_user: root
   tasks:
