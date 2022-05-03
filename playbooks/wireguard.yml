@@ -5,8 +5,6 @@
   # strategy: free
   roles:
     - wireguard
-  tags:
-    - vpn
 
 - hosts: wireguard_servers[0]
   become: yes
@@ -54,4 +52,4 @@
         state: restarted
 
     - name: Check connection and let server know where to reach all clients
-      ansible.builtin.command: ping -c 3 {{ hostvars[groups.wireguard_servers[0]].ansible_host }}
+      ansible.builtin.command: ping -c 3 {{ hostvars[groups.wireguard_servers[0]].wg_ip }}

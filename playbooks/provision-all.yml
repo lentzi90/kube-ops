@@ -9,6 +9,11 @@
   tags:
     - prereq
 
+- import_playbook: wireguard.yml
+  when: wireguard.enabled
+  tags:
+    - vpn
+
 - hosts: loadbalancers
   become: yes
   become_user: root

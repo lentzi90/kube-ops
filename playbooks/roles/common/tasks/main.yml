@@ -18,3 +18,5 @@
     state: stopped
     enabled: no
   when: ansible_distribution == 'CentOS'
+  # Firewalld could be missing...
+  ignore_errors: yes
