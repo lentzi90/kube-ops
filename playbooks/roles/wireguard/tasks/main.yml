@@ -1,0 +1,41 @@
+- name: Install repos for wireguard on CentOS
+  yum:
+    name:
+      - epel-release
+      - elrepo-release
+    state: present
+  when: ansible_distribution == 'CentOS'
+
+- name: Install wireguard on CentOS
+  yum:
+    name:
+      - epel-release
+      - elrepo-release
+      - kmod-wireguard
+      - wireguard-tools
+    state: present
+  when: ansible_distribution == 'CentOS'
+
+- name: Install wireguard on Ubuntu
+  apt:
+    name: wireguard
+    state: present
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Generate keys
+  ansible.builtin.shell: |
+    umask 077
+    wg genkey | tee privatekey | wg pubkey > publickey
+  args:
+    chdir: /etc/wireguard
+    creates: /etc/wireguard/privatekey
+
+- name: Get public keys
+  ansible.builtin.slurp:
+    src: /etc/wireguard/publickey
+  register: wg_pub_key
+
+- name: Get private keys
+  ansible.builtin.slurp:
+    src: /etc/wireguard/privatekey
+  register: wg_private_key
