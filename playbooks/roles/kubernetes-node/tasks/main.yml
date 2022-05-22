@@ -2,8 +2,8 @@
   lineinfile:
     destfile: /etc/hosts
     state: present
-    line: "{{ hostvars[item].ansible_host }} {{ item }}"
-  when: hostvars[item].ansible_host is defined
+    line: "{{ hostvars[item].private_ip }} {{ item }}"
+  when: hostvars[item].private_ip is defined
   with_items: "{{ groups['all'] }}"
 
 - name: Make sure `hostname -i` shows the correct IP

@@ -1,52 +1,12 @@
-{% if k8s_version.startswith("1.12") %}
-apiVersion: kubeadm.k8s.io/v1alpha3
-kind: InitConfiguration
-apiEndpoint:
-  advertiseAddress: {{ ansible_host }}
----
-apiVersion: kubeadm.k8s.io/v1alpha3
-kind: ClusterConfiguration
-apiServerCertSANs:
-  - {{ control_plane_endpoint | default(ansible_host) }}
-{% if groups.masters | count > 1 %}
-etcd:
-  local:
-    extraArgs:
-      name: "{{ ansible_hostname }}"
-      listen-client-urls: "https://127.0.0.1:2379,https://{{ ansible_host }}:2379"
-      advertise-client-urls: "https://{{ ansible_host }}:2379"
-      listen-peer-urls: "https://{{ ansible_host }}:2380"
-      initial-advertise-peer-urls: "https://{{ ansible_host }}:2380"
-      # Initial cluster consisting of all nodes up until (including) this master
-      initial-cluster:
-        "{% for master in groups.masters[:groups.masters.index( inventory_hostname )] -%}
-        {{ master }}=https://{{ hostvars[master].ansible_host }}:2380,
-        {%- endfor -%}
-        {{ ansible_hostname }}=https://{{ ansible_host }}:2380"
-{% if ansible_hostname != groups.masters.0 %}
-      initial-cluster-state: existing
-{% endif %}
-    serverCertSANs:
-      - {{ ansible_hostname }}
-      - {{ ansible_host }}
-    peerCertSANs:
-      - {{ ansible_hostname }}
-      - {{ ansible_host }}
-{% endif %}
-controlPlaneEndpoint: {{ control_plane_endpoint | default(ansible_host) }}
-kubernetesVersion: v{{ k8s_version }}
-networking:
-  podSubnet: {{ k8s_pod_cidr }}
-
-{% elif k8s_version.startswith("1.13") or k8s_version.startswith("1.14") %}
-
-{# Configuration for 1.13 and 1.14 #}
-apiVersion: kubeadm.k8s.io/v1beta1
+apiVersion: kubeadm.k8s.io/v1beta3
 kind: InitConfiguration
 localAPIEndpoint:
-  advertiseAddress: {{ ansible_host }}
+  advertiseAddress: {{ private_ip }}
+nodeRegistration:
+  kubeletExtraArgs:
+    node-ip: "{{ private_ip }}"
 ---
-apiVersion: kubeadm.k8s.io/v1beta1
+apiVersion: kubeadm.k8s.io/v1beta3
 kind: ClusterConfiguration
 apiServer:
   certSANs:
@@ -55,21 +15,3 @@ controlPlaneEndpoint: {{ control_plane_endpoint | default(ansible_host) }}
 kubernetesVersion: v{{ k8s_version }}
 networking:
   podSubnet: {{ k8s_pod_cidr }}
-{% else %}
-
-{# Configuration for 1.15 #}
-apiVersion: kubeadm.k8s.io/v1beta2
-kind: InitConfiguration
-localAPIEndpoint:
-  advertiseAddress: {{ ansible_host }}
----
-apiVersion: kubeadm.k8s.io/v1beta1
-kind: ClusterConfiguration
-apiServer:
-  certSANs:
-    - {{ control_plane_endpoint | default(ansible_host) }}
-controlPlaneEndpoint: {{ control_plane_endpoint | default(ansible_host) }}
-kubernetesVersion: v{{ k8s_version }}
-networking:
-  podSubnet: {{ k8s_pod_cidr }}
-{% endif %}

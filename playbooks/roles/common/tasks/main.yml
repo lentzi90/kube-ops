@@ -2,7 +2,7 @@
   yum:
     name:
       - nfs-utils
-      - libselinux-python
+      - python3-libselinux
   when: ansible_distribution == 'CentOS'
 
 - name: Install commonly needed packages for Ubuntu
@@ -10,18 +10,14 @@
     name:
       - nfs-common
       - apt-transport-https
+    update_cache: yes
   when: ansible_distribution == 'Ubuntu'
 
-- name: Fix DNS on ubuntu bionic
-  when: ansible_distribution_release == 'bionic'
-  block:
-    - name: Use google nameservers
-      lineinfile:
-        destfile: /etc/netplan/01-netcfg.yaml
-        regexp: '^(\s+addresses:\s)(.*)$'
-        line: '\1[8.8.8.8, 8.8.4.4]'
-        backrefs: yes
-      register: netplan_config
-    - name: Apply DNS config
-      command: netplan apply
-      when: netplan_config is changed
+- name: Disable firewalld on CentOS
+  service:
+    name: firewalld
+    state: stopped
+    enabled: no
+  when: ansible_distribution == 'CentOS'
+  # Firewalld could be missing...
+  ignore_errors: yes

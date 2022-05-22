@@ -1,0 +1,55 @@
+---
+- hosts: nodes,wireguard_servers[0]
+  become: yes
+  become_user: root
+  # strategy: free
+  roles:
+    - wireguard
+
+- hosts: wireguard_servers[0]
+  become: yes
+  become_user: root
+  tasks:
+
+    - name: Enable ip forwarding to let peers reach each other
+      ansible.posix.sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+        sysctl_set: yes
+
+    - name: Render wireguard server config
+      template:
+        src: wireguard-server.conf.j2
+        dest: /etc/wireguard/wg0.conf
+        mode: u=rw,g=,o=
+      vars:
+        client_ips: "{{ groups.nodes | map('extract', hostvars, 'wg_ip') | list }}"
+        public_keys: "{{ groups.nodes | map('extract', hostvars, 'wg_pub_key') | map(attribute='content') | map('b64decode') | list }}"
+        clients: "{{ dict(client_ips | zip(public_keys)) | dict2items(key_name='ip', value_name='public_key') }}"
+
+    - name: Start/restart Wireguard service
+      systemd:
+        name: "wg-quick@wg0"
+        enabled: yes
+        state: restarted
+
+
+- hosts: nodes
+  become: yes
+  become_user: root
+  tasks:
+
+    - name: Render wireguard client config
+      template:
+        src: wireguard-client.conf.j2
+        dest: /etc/wireguard/wg0.conf
+        mode: u=rw,g=,o=
+
+    - name: Start/restart Wireguard service
+      systemd:
+        name: "wg-quick@wg0"
+        enabled: yes
+        state: restarted
+
+    - name: Check connection and let server know where to reach all clients
+      ansible.builtin.command: ping -c 3 {{ hostvars[groups.wireguard_servers[0]].wg_ip }}

@@ -84,30 +84,27 @@ nfs ansible_host=192.168.10.20 ansible_port=22 ansible_user='vagrant' ansible_ss
 You can choose between Ubuntu and CentOS as operating system for the nodes.
 Simply uncomment the vagrant box you want to use in the `Vagrantfile`:
 ```ruby
-config.vm.box = "centos/7"
-# config.vm.box = "generic/ubuntu1604"
-# config.vm.box = "generic/ubuntu1804"
+config.vm.box = "generic/centos8"
+# config.vm.box = "generic/ubuntu2004"
 ```
 OR add the box in the `hosts` hash (see `worker2` and `worker3`):
 ```ruby
 hosts = {
     "master" => { "memory" => 1536, "ip" => "192.168.10.10"},
     "worker1" => { "memory" => 1536, "ip" => "192.168.10.30"},
-    "worker2" => { "memory" => 1536, "ip" => "192.168.10.31", "box" => "generic/ubuntu1604"},
-    "worker3" => { "memory" => 1024, "ip" => "192.168.10.32", "box" => "generic/ubuntu1804"},
+    "worker2" => { "memory" => 1536, "ip" => "192.168.10.31", "box" => "generic/ubuntu2004"},
+    "worker3" => { "memory" => 1024, "ip" => "192.168.10.32", "box" => "generic/ubuntu2004"},
     "nfs" => { "memory" => 512, "ip" => "192.168.10.20"}
 }
 ```
 
 ### High availability control plane
 
-The provided playbooks support setting up a HA control plane for kubernetes
-versions 1.12 and 1.13. You will need at least three master nodes configured
-both in the `Vagrantfile` and in the `inventory.ini` file. Additionally, you
-probably want to set up an external client instead of relying on one of the
-masters for talking to the API. You can for example use the nfs/loadbalancer
-machine. See `examples/ha.ini` and `examples/Vagrantfile.ha` for an example
-on how to configure this.
+The provided playbooks support setting up a HA control plane for kubernetes.
+You will need at least three control-plane nodes configured both in the `Vagrantfile` and in the inventory file.
+Additionally, you probably want to set up an external client instead of relying on one of the control-plane machines for talking to the API.
+You can for example use the nfs/loadbalancer machine.
+See `examples/ha.ini` and `examples/Vagrantfile.ha` for an example on how to configure this.
 
 ### Running playbooks manually
 
@@ -135,7 +132,7 @@ to access wordpress at `wordpress.example.com`. Or maybe [set up dnsmasq](https:
 to resolve the whole kube-ops domain to the IP address of the ingress
 controller.
 
-See `playbooks/templates/wordpress-production.yaml.j2` for configuration values.
+See `playbooks/templates/wordpress-values.yaml.j2` for configuration values.
 The login credentials are `kube-ops:p455w0rd` at http://wordpress.example.com/wp-admin.
 
 There are a few other components deployed in the cluster as base infrastructure.
@@ -172,10 +169,10 @@ going down, but they will prevent you from evicting pods!
 - Backing up only etcd data and root certificate is not enough. Old secrets
 (tokens) will not be valid and cause applications to fail. (Kube-proxy is one
 example.)
-- Coredns running on the master at first. This will make all pods loose
-DNS if/when the master goes down. If the coredns pods are moved to some other
+- Coredns is running on the control-plane at first. This will make all pods loose
+DNS if/when the control-plane goes down. If the coredns pods are moved to some other
 node (by killing them after other nodes have joined) all applications will
-continue to operate normally when the master goes down.
+continue to operate normally when the control-plane goes down.
 - Vagrant may occasionally try to run the ansible provisioner for all VMs. If
 this happens, just `Ctrl + C` and start it again with `vagrant provision`.
 (You'll notice this by looking for duplicate tasks and output.)

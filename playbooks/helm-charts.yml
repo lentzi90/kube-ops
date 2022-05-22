@@ -2,25 +2,13 @@
 - hosts: clients[0]
   tasks:
 
-    - name: Create service account for tiller
-      shell: kubectl -n kube-system create sa tiller --dry-run -o yaml | kubectl apply -f -
-      tags:
-        - helm
-
-    - name: Make tiller service account cluster-admin
-      shell: kubectl create clusterrolebinding helm-admin --clusterrole=cluster-admin --serviceaccount=kube-system:tiller --dry-run -o yaml | kubectl apply -f -
-      tags:
-        - helm
-
-    - name: Init helm
-      command: helm init --service-account tiller --upgrade --wait
-      tags:
-        - helm
-
-    - name: Wait for tiller to start
-      command: kubectl -n kube-system rollout status deployment tiller-deploy
-      tags:
-        - helm
+    - name: Add helm repos
+      command: helm repo add {{ item }}
+      loop:
+        - metallb https://metallb.github.io/metallb
+        - nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner
+        - ingress-nginx https://kubernetes.github.io/ingress-nginx
+        - bitnami https://charts.bitnami.com/bitnami
 
     - name: Write metallb values file
       template:
@@ -31,18 +19,18 @@
 
     - name: Deploy metallb
       command: >
-        helm upgrade --install metallb stable/metallb --version 0.9.7
+        helm upgrade --install metallb metallb/metallb --version 0.12.1
           -f /home/{{ ansible_user }}/metallb-values.yaml
       tags:
         - metallb
 
     - name: Deploy nfs client provisioner
       command: >
-        helm upgrade --install nfs-provisioner --version 1.2.6
+        helm upgrade --install nfs-provisioner --version 4.0.16
           --set nfs.server={{ nfs_server }}
           --set nfs.path={{ nfs_path }}
           --set storageClass.defaultClass=true
-          stable/nfs-client-provisioner
+          nfs-subdir-external-provisioner/nfs-subdir-external-provisioner
       tags:
         - nfs
 
@@ -64,6 +52,9 @@
             service:
               externalIPs: {{ worker_ips | to_yaml }}
 
+            ingressClassResource:
+              default: true
+
           defaultBackend:
             # Allow eviction of pod
             # minAvailable: 0  # default: 1
@@ -73,23 +64,23 @@
 
     - name: Deploy nginx ingress controller
       command: >
-        helm upgrade --install ingress-controller stable/nginx-ingress
-          --version 1.6.18
+        helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx
+          --version 4.1.0
           -f /home/{{ ansible_user }}/ingress-chart-values.yaml
       tags:
         - ingress
 
     - name: Write wordpress values file
       template:
-        src: wordpress-production.yaml.j2
-        dest: /home/{{ ansible_user }}/wordpress-production.yaml
+        src: wordpress-values.yaml.j2
+        dest: /home/{{ ansible_user }}/wordpress-values.yaml
       tags:
         - wordpress
 
     - name: Deploy wordpress
       command: >
-        helm upgrade --install wordpress stable/wordpress
-          --version 5.12.4
+        helm upgrade --install wordpress bitnami/wordpress
+          --version 14.0.4
           -f /home/{{ ansible_user }}/wordpress-production.yaml
       tags:
         - wordpress

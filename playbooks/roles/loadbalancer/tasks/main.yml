@@ -5,7 +5,7 @@
 
 - name: Install commonly needed packages
   yum:
-    name: libselinux-python
+    name: python3-libselinux
   when: ansible_distribution == 'CentOS'
 
 - name: Disable SELinux
@@ -24,16 +24,16 @@
           stats enable
           stats uri /stats
           stats auth admin:admin
-      {% if 'masters' in groups %}
+      {% if 'control_plane' in groups %}
       frontend control_plane
           bind *:6443
           mode tcp
-          default_backend k8s_masters
-      backend k8s_masters
+          default_backend k8s_control_plane
+      backend k8s_control_plane
           balance roundrobin
           mode tcp
-          {% for master in groups.masters -%}
-          server {{ master }} {{ hostvars[master].ansible_host }}:6443 check
+          {% for node in groups.control_plane -%}
+          server {{ node }} {{ hostvars[node].private_ip }}:6443 check
           {% endfor %}
       {% endif %}
 

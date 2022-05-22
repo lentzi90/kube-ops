@@ -1,0 +1,30 @@
+- name: Download Calico manifests
+  get_url:
+    url: "https://projectcalico.docs.tigera.io/manifests/calico.yaml"
+    dest: /tmp/
+    mode: '664'
+  register: calico_manifest
+
+# There is a commented out variable in the manifest that we un-comment
+# and then replace the default (commented) value with our own.
+# Note that the lines are indented!
+# Before:
+#     # - name: CALICO_IPV4POOL_CIDR
+#     #   value: "192.168.0.0/16"
+# After:
+#     - name: CALICO_IPV4POOL_CIDR
+#       value: "<k8s_pod_cidr>"
+- name: Replace the POD_CIDR in calico config
+  lineinfile:
+    path: /tmp/calico.yaml
+    backrefs: yes
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  loop:
+    - regexp: '^(.*)# (- name: CALICO_IPV4POOL_CIDR).*'
+      line: '\1\2'
+    - regexp: '^(.*)# (\s*value: )"192.168.0.0/16"\s'
+      line: '\1\2"{{ k8s_pod_cidr }}"'
+
+- name: Install Calico
+  shell: kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /tmp/calico.yaml

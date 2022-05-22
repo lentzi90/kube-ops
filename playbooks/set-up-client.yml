@@ -9,13 +9,13 @@
   tags:
     - client
 
-- hosts: masters[0]
+- hosts: control_plane[0]
   become: yes
   become_user: root
   tags:
     - kubeconfig
   tasks:
-    - name: Copy kubeconfig from first master
+    - name: Copy kubeconfig from first control plane node
       fetch:
         src: /etc/kubernetes/admin.conf
         dest: tmp/admin.conf
@@ -33,6 +33,7 @@
         dest: /home/{{ ansible_user }}/.kube/config
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
+        mode: u)rw,g=,o=
 
     - name: Clean up temporary files
       become: no

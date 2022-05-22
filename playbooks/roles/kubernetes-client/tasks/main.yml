@@ -1,7 +1,9 @@
 
 - name: Install kubectl
   package:
-    name: kubectl
+    name:
+      - kubectl
+      - bash-completion
     state: present
 
 - name: Create .kube directory
@@ -26,3 +28,5 @@
     block: |
       # Kubectl shell completion
       source '/home/{{ ansible_user }}/.kube/completion.bash.inc'
+      alias k=kubectl
+      complete -F __start_kubectl k
