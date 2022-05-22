@@ -10,6 +10,7 @@
     name:
       - nfs-common
       - apt-transport-https
+    update_cache: yes
   when: ansible_distribution == 'Ubuntu'
 
 - name: Disable firewalld on CentOS

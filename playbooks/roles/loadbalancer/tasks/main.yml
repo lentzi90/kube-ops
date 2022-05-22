@@ -33,7 +33,7 @@
           balance roundrobin
           mode tcp
           {% for node in groups.control_plane -%}
-          server {{ node }} {{ hostvars[node].wg_ip }}:6443 check
+          server {{ node }} {{ hostvars[node].private_ip }}:6443 check
           {% endfor %}
       {% endif %}
 

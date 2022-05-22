@@ -2,37 +2,31 @@ all:
   hosts:
     control-plane1:
       wg_ip: 192.168.2.2
-      private_ip: 192.168.2.2
+      private_ip: 192.168.10.10
       ansible_host: 192.168.10.10
-      ansible_ssh_private_key_file: '.vagrant/machines/master1/libvirt/private_key'
+      ansible_ssh_private_key_file: '.vagrant/machines/control-plane1/libvirt/private_key'
     worker1:
       wg_ip: 192.168.2.3
-      private_ip: 192.168.2.3
+      private_ip: 192.168.10.30
       ansible_host: 192.168.10.30
       ansible_ssh_private_key_file: '.vagrant/machines/worker1/libvirt/private_key'
     worker2:
       wg_ip: 192.168.2.4
-      private_ip: 192.168.2.4
+      private_ip: 192.168.10.31
       ansible_host: 192.168.10.31
       ansible_ssh_private_key_file: '.vagrant/machines/worker2/libvirt/private_key'
-    lb:
+    nfs:
       wg_ip: 192.168.2.1
-      private_ip: 192.168.2.1
-      # Public IP
       ansible_host: 192.168.10.20
-      ansible_user: centos
-    # nfs:
-    #   wg_ip: 192.168.2.1
-    #   ansible_host: 192.168.10.20
-    #   ansible_ssh_private_key_file: '.vagrant/machines/nfs/libvirt/private_key'
+      ansible_ssh_private_key_file: '.vagrant/machines/nfs/libvirt/private_key'
   vars:
     k8s_version: 1.23.6
     k8s_pod_cidr: 10.32.0.0/12
-    control_plane_endpoint: 192.168.2.1
-    # nfs_path: /nfs/export/www-data
-    # nfs_server: 192.168.10.20
+    control_plane_endpoint: 192.168.10.20
+    nfs_path: /nfs/export/www-data
+    nfs_server: 192.168.10.20
     wireguard:
-      enabled: true
+      enabled: false
       allowed_ips: 192.168.2.0/24
     ansible_python_interpreter: /usr/bin/python3
     ansible_user: 'vagrant'
@@ -52,16 +46,13 @@ all:
     clients:
       hosts:
         control-plane1:
-        lb:
-        # nfs:
-    # nfs_servers:
-    #   hosts:
-    #     nfs:
+        nfs:
+    nfs_servers:
+      hosts:
+        nfs:
     loadbalancers:
       hosts:
-        lb:
-        # nfs:
+        nfs:
     wireguard_servers:
       hosts:
-        lb:
-        # nfs:
+        nfs:

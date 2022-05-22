@@ -1,9 +1,9 @@
 # -*- mode: ruby -*-
 
 hosts = {
-    "master1" => { "memory" => 2048, "ip" => "192.168.10.10"},
-    # "master2" => { "memory" => 1024, "ip" => "192.168.10.11"},
-    # "master3" => { "memory" => 1024, "ip" => "192.168.10.12"},
+    "control-plane1" => { "memory" => 2048, "ip" => "192.168.10.10"},
+    # "control-plane2" => { "memory" => 1024, "ip" => "192.168.10.11"},
+    # "control-plane3" => { "memory" => 1024, "ip" => "192.168.10.12"},
     "worker1" => { "memory" => 2048, "ip" => "192.168.10.30"},
     "worker2" => { "memory" => 2048, "ip" => "192.168.10.31"},
     # "worker2" => { "memory" => 1536, "ip" => "192.168.10.31", "box" => "generic/ubuntu1604"},
@@ -46,9 +46,9 @@ Vagrant.configure("2") do |config|
 
             # Run ansible in parallel when all hosts are up and running
             if host == hosts.keys.last
-                # ----------------------------------------------
-                # Install kubernetes on BOTH master and workers
-                # ----------------------------------------------
+                # ----------------------------------------------------
+                # Install kubernetes on BOTH control-plane and workers
+                # ----------------------------------------------------
                 config.vm.provision :ansible do |ansible|
                     # Run on all hosts in parallel
                     ansible.limit = "all"
