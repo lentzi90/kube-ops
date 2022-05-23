@@ -1,0 +1,23 @@
+
+- name: Install prereqs
+  yum:
+    name: yum-utils
+
+- name: Set cri-o OS variable
+  set_fact:
+    crio_os: CentOS_8_Stream
+
+- name: Add runc repository
+  command: yum-config-manager --add-repo https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/{{ crio_os }}/devel:kubic:libcontainers:stable.repo
+  args:
+    creates: /etc/yum.repos.d/devel:kubic:libcontainers:stable.repo
+
+- name: Add cri-o repository
+  command: yum-config-manager --add-repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:{{ crio_version }}/{{ crio_os }}/devel:kubic:libcontainers:stable:cri-o:{{ crio_version }}.repo
+  args:
+    creates: /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:{{ crio_version }}.repo
+
+- name: Install docker
+  yum:
+    name: cri-o
+    update_cache: yes

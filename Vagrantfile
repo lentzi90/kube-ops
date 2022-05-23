@@ -2,18 +2,18 @@
 
 hosts = {
     "control-plane1" => { "memory" => 2048, "ip" => "192.168.10.10"},
-    # "control-plane2" => { "memory" => 1024, "ip" => "192.168.10.11"},
-    # "control-plane3" => { "memory" => 1024, "ip" => "192.168.10.12"},
+    # "control-plane2" => { "memory" => 2048, "ip" => "192.168.10.11"},
+    # "control-plane3" => { "memory" => 2048, "ip" => "192.168.10.12"},
     "worker1" => { "memory" => 2048, "ip" => "192.168.10.30"},
     "worker2" => { "memory" => 2048, "ip" => "192.168.10.31"},
-    # "worker2" => { "memory" => 1536, "ip" => "192.168.10.31", "box" => "generic/ubuntu1604"},
-    # "worker3" => { "memory" => 1024, "ip" => "192.168.10.32", "box" => "generic/ubuntu1804"},
+    # "worker2" => { "memory" => 1536, "ip" => "192.168.10.31", "box" => "generic/ubuntu2004"},
+    # "worker3" => { "memory" => 1024, "ip" => "192.168.10.32", "box" => "generic/cenots8s"},
     "nfs" => { "memory" => 512, "ip" => "192.168.10.20"}
 }
 
 Vagrant.configure("2") do |config|
     # Choose which box you want below
-    # config.vm.box = "generic/centos8"
+    # config.vm.box = "generic/centos8s"
     config.vm.box = "generic/ubuntu2004"
 
     config.vm.synced_folder ".", "/vagrant", disabled: true
