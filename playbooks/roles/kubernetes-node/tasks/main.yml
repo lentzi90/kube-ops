@@ -55,6 +55,11 @@
     name: kubelet
     enabled: yes
 
+- name: Add the br_netfilter module
+  community.general.modprobe:
+    name: br_netfilter
+    state: present
+
 - name: Check bridged traffic to iptables
   command: sysctl net.bridge.bridge-nf-call-iptables
   register: iptables
@@ -63,3 +68,12 @@
 - name: Pass bridged IPv4 traffic to iptables
   command: sysctl net.bridge.bridge-nf-call-iptables=1
   when: iptables.stdout != "net.bridge.bridge-nf-call-iptables = 1"
+
+- name: Check IPv4 forwarding
+  command: sysctl net.ipv4.ip_forward
+  register: ip_forward
+  changed_when: False
+
+- name: Enable IPv4 forwarding
+  command: sysctl net.ipv4.ip_forward=1
+  when: ip_forward.stdout != "net.ipv4.ip_forward = 1"

@@ -1,0 +1,54 @@
+
+- include_tasks: centos-cri-o.yml
+  when: ansible_distribution == 'CentOS'
+
+- name: Install cri-o prereqs
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+    state: present
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Add signing key for cri-o and runc
+  ansible.builtin.get_url:
+    url: "{{ item.url }}"
+    dest: "{{ item.dest }}"
+  loop:
+    - url: https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:{{ crio_version }}/{{ crio_os }}/Release.key
+      dest: /etc/apt/trusted.gpg.d/runc.asc
+    - url: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/{{ crio_os }}/Release.key
+      dest: /etc/apt/trusted.gpg.d/crio.asc
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Add cri-o repository
+  apt_repository:
+    repo: "{{ item }}"
+    state: present
+  loop:
+    - deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/{{ crio_os }}/ /
+    - deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ crio_version }}/{{ crio_os }}/ /
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Install cri-o
+  apt:
+    name:
+      - cri-o
+      - cri-o-runc
+    state: present
+    update_cache: yes
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Enable cri-o
+  systemd:
+    name: crio
+    state: started
+    enabled: yes
+
+# - name: Write docker daemon config file
+#   template:
+#     src: daemon.json.j2
+#     dest: /etc/docker/daemon.json
+#   when: ansible_distribution == 'Ubuntu'
