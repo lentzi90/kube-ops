@@ -28,11 +28,10 @@ kubernetes-node role and then running the following playbooks
 ## Example usage
 
 Say you want to automatically install all needed packages, but manually
-initialize the cluster. You could accomplish this by first starting the VMs
-without provisioning:
+initialize the cluster. You could accomplish this by first creating the VMs:
 
 ```
-vagrant up --no-provision
+vagrant up
 ```
 
 Then install kubernetes packages and prerequisites for ansible managed hosts:
@@ -40,6 +39,8 @@ Then install kubernetes packages and prerequisites for ansible managed hosts:
 ```
 ansible-playbook playbooks/provision-all.yml --tags prereq,node
 ```
+
+Now you can manually initialize the cluster using kubeadm.
 
 When you are finished setting up the cluster, you may want to add helm and some
 charts:

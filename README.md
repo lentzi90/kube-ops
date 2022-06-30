@@ -5,24 +5,26 @@ Ansible is used for provisioning (see `playbooks`).
 
 ## Quick start
 
-The cluster is set up and provisioned by running `vagrant up --provider libvirt`.
+The cluster nodes are created by running `vagrant up --provider libvirt`.
 
-If you wish to run playbooks manually from the host, do it like this:
+You can then run the playbooks to install Kubernetes from the host, do it like this:
 ```
 ansible-playbook playbooks/provision-all.yml
 ```
 There is no need to specify the inventory since it is already configured in
 `ansible.cfg`.
 
-Once ansible is finished provisioning you can access the cluster from the master
-node or from the nfs server. Example:
+Once ansible is finished provisioning you can access the cluster from the control-plane1 node or from the nfs server.
+Example:
 ```
 $ vagrant ssh nfs
 $ kubectl get nodes
-NAME      STATUS   ROLES    AGE    VERSION
-master1   Ready    master   112m   v1.13.0
-worker1   Ready    <none>   111m   v1.13.0
-worker2   Ready    <none>   111m   v1.13.0
+NAME             STATUS   ROLES           AGE     VERSION
+control-plane1   Ready    control-plane   4m42s   v1.24.2
+control-plane2   Ready    control-plane   3m21s   v1.24.2
+control-plane3   Ready    control-plane   98s     v1.24.2
+worker1          Ready    <none>          64s     v1.24.2
+worker2          Ready    <none>          77s     v1.24.2
 ```
 
 ## Requirements
@@ -43,9 +45,9 @@ the `Vagrantfile`. These machines are then provisioned using ansible playbooks
 to form a Kubernetes cluster, NFS server and load balancer. The architecture
 is similar to this diagram.
 
-![Example architecture with 3 masters](images/kube-ops-infra.png)
+![Example architecture with 3 control-plane nodes](images/kube-ops-infra.png)
 
-Note that the default configuration only has a single master node.
+Note that the default configuration only has a single control-plane node.
 
 ## Options
 
@@ -58,42 +60,21 @@ inventory files ending with `.ini` and vagrant files starting with
 with the example vagrant file (e.g. `mv examples/Vagrantfile.ha Vagrantfile`).
 It is already configured to use the corresponding example inventory.
 
-### Virtualization provider
-
-If you want to use virtualbox instead of libvirt, just install virtualbox and
-change the `inventory.ini` file to use the virtualbox block instead of the
-libvirt one. Like this:
-
-```
-; Libvirt
-; master ansible_host=192.168.10.10 ansible_port=22 ansible_user='vagrant' ansible_ssh_private_key_file='.vagrant/machines/master/libvirt/private_key'
-; worker1 ansible_host=192.168.10.30 ansible_port=22 ansible_user='vagrant' ansible_ssh_private_key_file='.vagrant/machines/worker1/libvirt/private_key'
-; worker2 ansible_host=192.168.10.31 ansible_port=22 ansible_user='vagrant' ansible_ssh_private_key_file='.vagrant/machines/worker2/libvirt/private_key'
-; worker3 ansible_host=192.168.10.32 ansible_port=22 ansible_user='vagrant' ansible_ssh_private_key_file='.vagrant/machines/worker3/libvirt/private_key'
-; nfs ansible_host=192.168.10.20 ansible_port=22 ansible_user='vagrant' ansible_ssh_private_key_file='.vagrant/machines/nfs/libvirt/private_key'
-; Virtualbox
-master ansible_host=192.168.10.10 ansible_port=22 ansible_user='vagrant' ansible_ssh_private_key_file='.vagrant/machines/master/virtualbox/private_key'
-worker1 ansible_host=192.168.10.30 ansible_port=22 ansible_user='vagrant' ansible_ssh_private_key_file='.vagrant/machines/worker1/virtualbox/private_key'
-worker2 ansible_host=192.168.10.31 ansible_port=22 ansible_user='vagrant' ansible_ssh_private_key_file='.vagrant/machines/worker2/virtualbox/private_key'
-worker3 ansible_host=192.168.10.32 ansible_port=22 ansible_user='vagrant' ansible_ssh_private_key_file='.vagrant/machines/worker3/virtualbox/private_key'
-nfs ansible_host=192.168.10.20 ansible_port=22 ansible_user='vagrant' ansible_ssh_private_key_file='.vagrant/machines/nfs/virtualbox/private_key'
-```
-
 ### Operating system
 
 You can choose between Ubuntu and CentOS as operating system for the nodes.
 Simply uncomment the vagrant box you want to use in the `Vagrantfile`:
 ```ruby
-config.vm.box = "generic/centos8"
-# config.vm.box = "generic/ubuntu2004"
+config.vm.box = "generic/centos9s"
+# config.vm.box = "generic/ubuntu2204"
 ```
 OR add the box in the `hosts` hash (see `worker2` and `worker3`):
 ```ruby
 hosts = {
-    "master" => { "memory" => 1536, "ip" => "192.168.10.10"},
+    "control-plane1" => { "memory" => 1536, "ip" => "192.168.10.10"},
     "worker1" => { "memory" => 1536, "ip" => "192.168.10.30"},
-    "worker2" => { "memory" => 1536, "ip" => "192.168.10.31", "box" => "generic/ubuntu2004"},
-    "worker3" => { "memory" => 1024, "ip" => "192.168.10.32", "box" => "generic/ubuntu2004"},
+    "worker2" => { "memory" => 1536, "ip" => "192.168.10.31", "box" => "generic/ubuntu2204"},
+    "worker3" => { "memory" => 1024, "ip" => "192.168.10.32", "box" => "generic/ubuntu2204"},
     "nfs" => { "memory" => 512, "ip" => "192.168.10.20"}
 }
 ```
@@ -105,13 +86,6 @@ You will need at least three control-plane nodes configured both in the `Vagrant
 Additionally, you probably want to set up an external client instead of relying on one of the control-plane machines for talking to the API.
 You can for example use the nfs/loadbalancer machine.
 See `examples/ha.ini` and `examples/Vagrantfile.ha` for an example on how to configure this.
-
-### Running playbooks manually
-
-You may want to run some playbooks manually, for example if something fails or
-if you don't want to do the full provisioning. Rerunning playbooks should not be
-a problem, they are written to be idempotent. Check the `playbooks` folder for
-more information about the playbooks.
 
 ## Ops Scenarios
 
